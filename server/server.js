@@ -263,6 +263,33 @@ app.get('/admin/applications/:id', requireAdminAuth, (_req, res) => {
     res.sendFile(path.join(publicDir, 'admin', 'application.html'));
 });
 
+const staticPages = [
+    { path: '/about', file: 'about.html' },
+    { path: '/contact', file: 'contact.html' },
+    { path: '/cookie-policy', file: 'cookie-policy.html' },
+    { path: '/donate', file: 'donate.html' },
+    { path: '/eligibility', file: 'eligibility.html' },
+    { path: '/gallery', file: 'gallery.html' },
+    { path: '/privacy', file: 'privacy.html' },
+    { path: '/safeguarding', file: 'safeguarding.html' },
+    { path: '/volunteer', file: 'volunteer.html' }
+];
+
+for (const page of staticPages) {
+    app.get(page.path, (_req, res) => {
+        res.sendFile(path.join(siteRootDir, page.file));
+    });
+}
+
+app.use((req, res, next) => {
+    if (req.method !== 'GET') return next();
+    const accept = req.headers.accept || '';
+    if (accept.includes('text/html')) {
+        return res.status(404).sendFile(path.join(siteRootDir, '404.html'));
+    }
+    return next();
+});
+
 app.use((err, _req, res, _next) => {
     console.error(err);
     res.status(500).json({ success: false, message: 'Server error' });
