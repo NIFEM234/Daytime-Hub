@@ -1,5 +1,45 @@
 // Gallery filter section switching and animation
 document.addEventListener('DOMContentLoaded', function () {
+    if (window.location.protocol === 'file:') {
+        const base = document.querySelector('base');
+        if (base) {
+            base.href = './';
+        }
+
+        const shouldRewrite = (value) => {
+            if (!value) return false;
+            const lower = value.toLowerCase();
+            if (lower.startsWith('http') || lower.startsWith('mailto:') || lower.startsWith('tel:') || lower.startsWith('data:') || lower.startsWith('blob:') || lower.startsWith('#')) {
+                return false;
+            }
+            return true;
+        };
+
+        const rewriteValue = (value) => {
+            const cleaned = value.replace(/^\/+/, '');
+            if (cleaned.startsWith('./') || cleaned.startsWith('../')) return cleaned;
+            return `./${cleaned}`;
+        };
+
+        document.querySelectorAll('[src]').forEach((el) => {
+            const raw = el.getAttribute('src');
+            if (!shouldRewrite(raw)) return;
+            el.setAttribute('src', rewriteValue(raw));
+        });
+
+        document.querySelectorAll('link[href]').forEach((el) => {
+            const raw = el.getAttribute('href');
+            if (!shouldRewrite(raw)) return;
+            el.setAttribute('href', rewriteValue(raw));
+        });
+
+        document.querySelectorAll('[poster]').forEach((el) => {
+            const raw = el.getAttribute('poster');
+            if (!shouldRewrite(raw)) return;
+            el.setAttribute('poster', rewriteValue(raw));
+        });
+    }
+
     const filterPills = document.querySelectorAll('.filter-pill');
     const sections = {
         all: document.getElementById('gallery-all'),
@@ -37,6 +77,11 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     });
+    if (!document.querySelector('base')) {
+        const base = document.createElement('base');
+        base.href = window.location.protocol === 'file:' ? './' : '/';
+        document.head.prepend(base);
+    }
 });
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -211,7 +256,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const line = document.createElement('div');
     line.className = 'site-last-updated';
-    line.innerHTML = `Website last updated ${formattedDate} - by <a href="mailto:oluwanifemijosiah02@gmail.com">oluwanifemijosiah02@gmail.com</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://www.gravesendmethodistchurch.org.uk/" target="_blank" rel="noopener noreferrer">Gravesend Methodist Church Link</a>`;
+    line.innerHTML = `Website last updated ${formattedDate} - by <a href="https://mail.google.com/mail/?view=cm&fs=1&to=oluwanifemijosiah02@gmail.com" target="_blank" rel="noopener noreferrer">oluwanifemijosiah02@gmail.com</a>&nbsp;&nbsp;&nbsp;,&nbsp;&nbsp;&nbsp;<a href="tel:+447587993762">07587993762</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://www.gravesendmethodistchurch.org.uk/" target="_blank" rel="noopener noreferrer">Gravesend Methodist Church Link</a>`;
 
     footerBottom.appendChild(line);
 });
