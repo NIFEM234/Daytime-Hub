@@ -146,7 +146,7 @@ const corsAllowlist = (process.env.CORS_ORIGIN || 'http://localhost:3000,http://
     .split(',')
     .map(origin => origin.trim())
     .filter(Boolean);
-const allowAllOrigins = corsAllowlist.includes('*');
+const allowAllOrigins = process.env.DEV_ALLOW_ALL_CORS === 'true' || corsAllowlist.includes('*');
 
 app.use(cors({
     origin: (origin, callback) => {
@@ -160,14 +160,20 @@ app.use(cors({
         // Allow all origins if explicitly enabled for development/debugging
         if (allowAllOrigins || process.env.DEV_ALLOW_ALL_CORS === 'true') return callback(null, true);
 
+
+        // For browser requests, a missing Origin header usually means a same-origin navigation
+        // or a non-browser client — allow those by default. Explicitly reject 'null' and 'file:' origins.
         if (!origin) return callback(null, true);
-        if (origin === 'null') return callback(null, true);
-        // Allow local file:// origins (desktop testing) and file: scheme
-        if (typeof origin === 'string' && origin.startsWith('file:')) return callback(null, true);
+        if (origin === 'null') return callback(new Error('Null origin is not allowed'));
+        if (typeof origin === 'string' && origin.startsWith('file:')) return callback(new Error('file:// origins are not allowed'));
+
+        // Exact-match check against the allowlist
         if (corsAllowlist.includes(origin)) return callback(null, true);
+
         console.warn('CORS blocked origin:', origin, 'allowed list:', corsAllowlist);
         return callback(new Error('Not allowed by CORS'));
-    }
+    },
+    credentials: true
 }));
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: false }));
