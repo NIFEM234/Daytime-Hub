@@ -301,6 +301,11 @@ body {
 
 }
 
+/* Hide mobile nav toggle on larger screens; shown only by mobile media query */
+.nav-toggle {
+    display: none;
+}
+
 .navbar a {
     color: var(--text);
     text-decoration: none;
@@ -399,6 +404,252 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem;
+}
+
+/* Mobile-first adjustments for a true phone layout */
+@media (max-width: 600px) {
+    :root {
+        --nav-height: 64px;
+    }
+
+    body {
+        padding-top: var(--nav-height);
+        font-size: 16px;
+    }
+
+    .page {
+        padding: 1rem;
+        max-width: 100%;
+    }
+
+    /* Compact header */
+    .navbar {
+        padding: 0.6rem 1rem;
+    }
+
+    .logo-img {
+        width: 40px;
+        height: 40px;
+        margin-right: 12px;
+    }
+
+    .logo {
+        font-size: 1rem;
+        gap: 0.4rem;
+    }
+
+    /* Mobile nav: hide by default, show with toggle */
+    .nav-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        background: transparent;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        border-radius: 9px;
+        margin-left: 0.5rem;
+        cursor: pointer;
+        /* place inside navbar area, vertically centered */
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        right: 12px;
+        z-index: 120;
+        padding: 0;
+    }
+
+    .nav-toggle:focus {
+        outline: 3px solid rgba(0, 139, 139, 0.18);
+    }
+
+    .nav-toggle .hamburger {
+        width: 20px;
+        height: 2px;
+        background: var(--text);
+        display: block;
+        position: relative;
+    }
+
+    .nav-toggle .hamburger::before,
+    .nav-toggle .hamburger {
+        width: 18px;
+        height: 2px;
+        background: var(--text);
+        display: block;
+        position: relative;
+    }
+
+    .nav-toggle .hamburger::before,
+    .nav-toggle .hamburger::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        width: 18px;
+        height: 2px;
+        background: var(--text);
+        transition: transform 200ms ease, opacity 200ms ease;
+    }
+
+    .nav-toggle .hamburger::before {
+        top: -5px;
+    }
+
+    .nav-toggle .hamburger::after {
+        top: 5px;
+    }
+
+    /* Ensure header content does not get overlapped by the toggle on small screens */
+    .navbar {
+        padding-right: 3.5rem;
+    }
+
+    .logo-img {
+        margin-right: 8px;
+    }
+
+    /* When nav is open (aria/state on header), show stacked nav */
+    .navbar[data-open="true"] nav {
+        display: flex;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: calc(var(--nav-height) - 8px);
+        /* lift dropdown slightly to close gap */
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.72));
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem 1rem;
+        box-shadow: var(--glass-shadow);
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(var(--glass-blur)) saturate(170%);
+        -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(170%);
+        border-bottom-left-radius: 12px;
+        border-bottom-right-radius: 12px;
+        z-index: 60;
+    }
+
+    .navbar[data-open="true"] nav a {
+        padding: 0.6rem 0.25rem;
+        margin: 0;
+        font-size: 1rem;
+        border-radius: 8px;
+    }
+
+    /* Glassy link backgrounds and hover states inside the dropdown */
+    .navbar[data-open="true"] nav a {
+        background: transparent;
+        color: var(--text);
+        transition: background 180ms ease, transform 120ms ease, color 160ms ease;
+    }
+
+    .navbar[data-open="true"] nav a:hover,
+    .navbar[data-open="true"] nav a:focus {
+        background: rgba(255, 255, 255, 0.22);
+        transform: translateY(-2px);
+        color: var(--primary);
+        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+    }
+
+    /* Animate hamburger into X when open */
+    .navbar[data-open="true"] .nav-toggle .hamburger {
+        background: transparent;
+    }
+
+    .navbar[data-open="true"] .nav-toggle .hamburger::before {
+        transform: translateY(6px) rotate(45deg);
+    }
+
+    .navbar[data-open="true"] .nav-toggle .hamburger::after {
+        transform: translateY(-6px) rotate(-45deg);
+    }
+
+    /* Hero becomes shorter and text sits near the bottom; CTAs become full-width stacked buttons */
+    .hero {
+        height: 68vh;
+        min-height: 360px;
+        margin-bottom: 0.5rem;
+        /* tighten gap to next section on phones */
+    }
+
+    .hero-text {
+        position: absolute;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        top: 52%;
+        padding: 1rem 1rem;
+        max-width: 92%;
+        border-radius: 12px;
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0.42), rgba(0, 0, 0, 0.54));
+    }
+
+    .hero-text h1 {
+        font-size: 1.45rem;
+        line-height: 1.2;
+        margin-bottom: 0.6rem;
+    }
+
+    .hero-text p {
+        font-size: 1rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .cta .btn {
+        display: block;
+        width: 100%;
+        text-align: center;
+        margin: 0 0 0.6rem 0;
+        padding: 0.85rem;
+        border-radius: 10px;
+    }
+
+    .cta .btn:last-child {
+        margin-bottom: 0;
+    }
+
+    /* Make hero imagery focus on center on small screens */
+    .hero-slider img {
+        object-position: center 30%;
+    }
+
+    /* Reduce paddings across stacked sections */
+    .events,
+    .about-story,
+    .offers,
+    .stats,
+    .impact-story,
+    .community-quotes,
+    .cta-banner,
+    .map-section,
+    .partners,
+    .help-cta {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+        padding-top: 1.25rem;
+        padding-bottom: 1.25rem;
+    }
+
+    /* Offer cards stack nicely on mobile */
+    .offers-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    /* Stats and cards become single column */
+    .stats-grid,
+    .community-grid,
+    .events-grid,
+    .map-grid,
+    .events-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    /* Footer layout stacks */
+    .footer-grid {
+        display: block;
+        gap: 0;
+    }
 }
 
 /* Hero Section */
@@ -1701,6 +1952,29 @@ body {
 @media (max-width: 700px) {
     .leadership-card {
         padding: 2rem 1.75rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .leadership-avatar {
+        width: 92%;
+        max-width: 340px;
+        height: auto;
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+        border-radius: 14px;
+    }
+
+    .leadership-avatar img {
+        width: 100%;
+        height: auto;
+        object-fit: cover;
+        display: block;
+    }
+
+    .leadership-card {
+        text-align: center;
     }
 }
 
@@ -4173,7 +4447,8 @@ ul {
     .hero-text {
         padding: 0.85rem 0.9rem;
         max-width: 94%;
-        top: 44%;
+        top: 52%;
+        transform: translate(-50%, -50%);
     }
 
     .hero-text h1 {
@@ -4316,4 +4591,96 @@ ul {
 .give-card:hover {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.7));
     box-shadow: var(--glass-shadow-hover);
+}
+
+/* Strong override: on small screens keep nav hidden by default and only show when toggled */
+@media (max-width: 768px) {
+    .navbar nav {
+        display: none !important;
+    }
+
+    .navbar[data-open="true"] nav {
+        display: flex !important;
+        flex-direction: column;
+    }
+}
+
+/* Center header logo and "last updated" text on non-index pages for phone view */
+@media (max-width: 768px) {
+    body:not(.home) .navbar {
+        align-items: center;
+    }
+
+    body:not(.home) .navbar .logo {
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+    /* Center last-updated / date text injected into footer */
+    body:not(.home) .site-last-updated,
+    body:not(.home) .footer-bottom .site-last-updated {
+        text-align: center;
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+    }
+}
+
+/* Improve spacing on phones: avoid touching the screen edges and center key blocks */
+@media (max-width: 768px) {
+
+    /* Ensure the main page container has safe horizontal padding */
+    .page {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+
+    /* Add inner padding to common card/section containers so content doesn't touch walls */
+    .glass-surface,
+    .card,
+    .offer-card,
+    .help-card,
+    .map-card,
+    .contact-highlights,
+    .contact-info,
+    .quick-contact-card,
+    .impact-content,
+    .impact-image,
+    .stats-header {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+    }
+
+    /* Ensure wide full-bleed sections keep inner content centered */
+    .hero-text,
+    .cta,
+    .offers-grid,
+    .stats-grid,
+    .community-grid,
+    .events-grid,
+    .map-grid {
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 100%;
+    }
+
+    /* Improve readability: slightly reduce large paddings and keep things centered */
+    .page>* {
+        box-sizing: border-box;
+    }
+}
+
+/* Reduce hero/mission gap on small and medium screens for a tighter layout */
+@media (max-width: 900px) {
+    .hero {
+        margin-bottom: 0.8rem;
+    }
+
+    .mission {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
 }

@@ -1,5 +1,32 @@
 // Gallery filter section switching and animation
 document.addEventListener('DOMContentLoaded', function () {
+    // Mobile nav toggle
+    const navToggle = document.querySelector('.nav-toggle');
+    const navbar = document.querySelector('.navbar');
+    const siteNav = document.getElementById('site-nav');
+    if (navToggle && navbar && siteNav) {
+        const setOpen = (isOpen) => {
+            navbar.setAttribute('data-open', isOpen ? 'true' : 'false');
+            navToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        };
+
+        navToggle.addEventListener('click', (e) => {
+            const open = navbar.getAttribute('data-open') === 'true';
+            setOpen(!open);
+        });
+
+        // Close on escape
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') setOpen(false);
+        });
+
+        // Close when clicking outside of nav
+        document.addEventListener('click', (e) => {
+            if (!navbar.contains(e.target) && navbar.getAttribute('data-open') === 'true') {
+                setOpen(false);
+            }
+        });
+    }
     if (window.location.protocol === 'file:') {
         const base = document.querySelector('base');
         if (base) {

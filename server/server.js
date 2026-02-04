@@ -153,6 +153,8 @@ app.use(cors({
         if (allowAllOrigins) return callback(null, true);
         if (!origin) return callback(null, true);
         if (origin === 'null') return callback(null, true);
+        // Allow local file:// origins (desktop testing) and file: scheme
+        if (typeof origin === 'string' && origin.startsWith('file:')) return callback(null, true);
         if (corsAllowlist.includes(origin)) return callback(null, true);
         return callback(new Error('Not allowed by CORS'));
     }
