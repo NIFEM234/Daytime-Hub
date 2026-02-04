@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Volunteer Applications | Admin</title>
+    <style>
+        :root {
+            color-scheme: light;
+            font-family: "Segoe UI", Roboto, Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background: #f6f7fb;
+            color: #1b1f24;
+        }
+
+        header {
+            background: #0f4c5c;
+            color: white;
+            padding: 1.25rem 2rem;
+        }
+
+        .header-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .brand img {
+            width: 44px;
+            height: 44px;
+            object-fit: contain;
+            border-radius: 8px;
+            background: white;
+            padding: 4px;
+        }
+
+        main {
+            padding: 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        input[type="search"] {
+            flex: 1 1 280px;
+            padding: 0.65rem 0.8rem;
+            border: 1px solid #d9dde4;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 0.75rem 0.6rem;
+            border-bottom: 1px solid #eef1f6;
+            vertical-align: top;
+        }
+
+        th {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #6c7480;
+        }
+
+        a {
+            color: #0f4c5c;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .empty {
+            padding: 1rem 0;
+            color: #6c7480;
+        }
+
+        .error {
+            background: #ffecec;
+            color: #b00020;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .chip {
+            background: #eef5f7;
+            color: #0f4c5c;
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="header-inner">
+            <div class="brand">
+                <img src="/img/Gravesend daytime logo Facebook" alt="DayTime Hub Logo" />
+                <h1>DayTime Hub — Volunteer Applications</h1>
+            </div>
+            <form method="POST" action="/admin/logout" style="margin:0;">
+                <button type="submit"
+                    style="background:#ffffff; color:#0f4c5c; border:none; padding:0.45rem 0.9rem; border-radius:8px; font-weight:600; cursor:pointer;">Log
+                    out</button>
+            </form>
+        </div>
+    </header>
+    <main>
+        <div class="card">
+            <h2>Applications</h2>
+            <div class="toolbar">
+                <input id="search" type="search" placeholder="Search by name, email, or role" />
+            </div>
+            <div id="error" class="error" style="display:none;"></div>
+            <div id="content"></div>
+        </div>
+    </main>
+
+    <script src="/admin/index.js" defer></script>
+</body>
+
+</html>

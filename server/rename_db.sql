@@ -1,0 +1,1 @@
+ALTER DATABASE "daytime_hub " RENAME TO daytime_hub;

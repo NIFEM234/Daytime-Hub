@@ -1,0 +1,20 @@
+{
+    "name": "DayTime Hub",
+    "short_name": "DayTime Hub",
+    "start_url": "https://www.daytimehub.org/",
+    "display": "standalone",
+    "background_color": "#FAF9F6",
+    "theme_color": "#0f4c5c",
+    "icons": [
+        {
+            "src": "/favicon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml"
+        },
+        {
+            "src": "/apple-touch-icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml"
+        }
+    ]
+}

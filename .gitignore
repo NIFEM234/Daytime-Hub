@@ -1,0 +1,27 @@
+# Ignore environment files
+.env
+server/.env
+
+# Personal data
+volunteer_applications.csv
+
+# Dependencies
+node_modules/
+
+# Logs
+logs/
+*.log
+
+# Build outputs
+dist/
+build/
+coverage/
+
+# Editor/OS files
+.DS_Store
+.vscode/
+.idea/
+
+# Keys
+*.pem
+*.key

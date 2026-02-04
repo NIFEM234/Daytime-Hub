@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  app:
+    image: daytime-hub:latest
+    build: ./server
+    env_file:
+      - ./prod.env # do NOT commit this file
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      - NODE_ENV=production
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: daytime_hub
+      POSTGRES_USER: postgres
+      # Use Docker secrets for the password (recommended)
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    secrets:
+      - postgres_password
+
+volumes:
+  db-data:
+
+
+secrets:
+  postgres_password:
+    external: true
