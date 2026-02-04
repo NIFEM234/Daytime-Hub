@@ -150,12 +150,22 @@ const allowAllOrigins = corsAllowlist.includes('*');
 
 app.use(cors({
     origin: (origin, callback) => {
-        if (allowAllOrigins) return callback(null, true);
+        // Debug: log origin checks
+        try {
+            console.log('CORS check - origin:', origin, 'allowAllOrigins:', allowAllOrigins);
+        } catch (e) {
+            /* ignore logging errors */
+        }
+
+        // Allow all origins if explicitly enabled for development/debugging
+        if (allowAllOrigins || process.env.DEV_ALLOW_ALL_CORS === 'true') return callback(null, true);
+
         if (!origin) return callback(null, true);
         if (origin === 'null') return callback(null, true);
         // Allow local file:// origins (desktop testing) and file: scheme
         if (typeof origin === 'string' && origin.startsWith('file:')) return callback(null, true);
         if (corsAllowlist.includes(origin)) return callback(null, true);
+        console.warn('CORS blocked origin:', origin, 'allowed list:', corsAllowlist);
         return callback(new Error('Not allowed by CORS'));
     }
 }));
