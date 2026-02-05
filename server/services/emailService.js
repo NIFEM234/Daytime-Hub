@@ -159,9 +159,9 @@ export async function sendApplicationEmail(application, pdfBuffer, replyTo) {
         text: `A new volunteer application was received.\n\nName: ${application.full_name}\nEmail: ${application.email}\nPhone: ${application.phone}\nRole: ${application.role}\n\nView in dashboard: ${APP_BASE_URL}/admin/applications/${application.id}`,
         attachments: [
             {
-                content: pdfBuffer.toString('base64'),
+                content: pdfBuffer,
                 filename: `application_${application.full_name.replace(/\s+/g, '_')}.pdf`,
-                type: 'application/pdf',
+                contentType: 'application/pdf',
                 disposition: 'attachment'
             }
         ]
@@ -225,9 +225,9 @@ export async function sendContactEmail(contact, pdfBuffer) {
 
     if (pdfBuffer) {
         email.attachments.push({
-            content: pdfBuffer.toString('base64'),
+            content: pdfBuffer,
             filename: `contact_${(contact.name || 'message').replace(/\s+/g, '_')}.pdf`,
-            type: 'application/pdf',
+            contentType: 'application/pdf',
             disposition: 'attachment'
         });
     }
