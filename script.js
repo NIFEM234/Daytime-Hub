@@ -1,3 +1,27 @@
+// Google Analytics (GA4) loader: reads `meta[name="ga-measurement-id"]` and injects gtag if present
+(function loadGAFromMeta() {
+    try {
+        const meta = document.querySelector('meta[name="ga-measurement-id"]');
+        const id = meta?.getAttribute('content')?.trim();
+        if (!id) return;
+
+        // Inject gtag script
+        const s = document.createElement('script');
+        s.async = true;
+        s.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(id)}`;
+        document.head.appendChild(s);
+
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { window.dataLayer.push(arguments); } // eslint-disable-line no-inner-declarations
+        window.gtag = window.gtag || gtag;
+        gtag('js', new Date());
+        gtag('config', id, { send_page_view: true });
+    } catch (e) {
+        // fail silently
+        console.warn('GA loader error', e);
+    }
+})();
+
 // Gallery filter section switching and animation
 document.addEventListener('DOMContentLoaded', function () {
     // Mobile nav toggle
