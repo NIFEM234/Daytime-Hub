@@ -175,14 +175,24 @@ export async function sendApplicationEmail(application, pdfBuffer, replyTo, pdfU
         });
     }
 
-    const pdfLink = pdfUrl ? `${APP_BASE_URL.replace(/\/$/, '')}${pdfUrl}` : null;
+    // Intentionally do NOT include a direct PDF link in the email body.
+    // The only link included below is the admin dashboard link so admins
+    // can log in and view the application and PDF in the protected admin area.
+    const adminLoginUrl = `${APP_BASE_URL.replace(/\/$/, '')}/admin/login?returnTo=${encodeURIComponent(`/admin/applications/${application.id}`)}`;
 
     const email = {
         to: EMAIL_TO,
         from: EMAIL_FROM,
         replyTo: replyTo,
         subject: `New Volunteer Application – ${application.full_name}`,
-        text: `A new volunteer application was received.\n\nName: ${application.full_name}\nEmail: ${application.email}\nPhone: ${application.phone}\nRole: ${application.role}\n\nView in dashboard: ${APP_BASE_URL}/admin/applications/${application.id}` + (pdfLink ? `\n\nView PDF: ${pdfLink}` : ''),
+        text: `A new volunteer application was received.\n\nName: ${application.full_name}\nEmail: ${application.email}\nPhone: ${application.phone}\nRole: ${application.role}\n\nAdmin login: ${adminLoginUrl}`,
+        // Disable SendGrid click tracking for this message so links are not rewritten
+        mail_settings: {
+            click_tracking: {
+                enable: false,
+                enable_text: false
+            }
+        },
         attachments
     };
 
@@ -211,6 +221,10 @@ export async function sendReferenceRequestEmail(application) {
         from: EMAIL_FROM,
         replyTo: EMAIL_TO,
         subject: `Reference request for ${application.full_name}`,
+        // Disable click-tracking here as well to avoid rewriting any potential links
+        mail_settings: {
+            click_tracking: { enable: false, enable_text: false }
+        },
         text: `Dear ${application.referee_name},\n\n${application.full_name} has applied to volunteer with DayTime Hub and listed you as a referee.\n\nWe would appreciate your comments on their suitability for the role, including:\n- How long you have known them and in what capacity\n- What they can contribute to this role\n- Any concerns you may have\n- How we can best support them\n\nPlease reply to this email with your feedback.\n\nMany thanks,\nDayTime Hub`
     };
 
@@ -239,6 +253,13 @@ export async function sendContactEmail(contact, pdfBuffer) {
         replyTo: contact.email || EMAIL_TO,
         subject: `Contact message – ${contact.name || 'Website'}`,
         text: `A new contact message was submitted.\n\nName: ${contact.name}\nEmail: ${contact.email}\nPhone: ${contact.phone || ''}\nSubject: ${contact.subject || ''}\n\nMessage:\n${contact.message || ''}`,
+        // Disable SendGrid click tracking to avoid link rewriting when attachments are included
+        mail_settings: {
+            click_tracking: {
+                enable: false,
+                enable_text: false
+            }
+        },
         attachments: []
     };
 

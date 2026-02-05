@@ -76,7 +76,8 @@ router.post('/apply', async (req, res, next) => {
             const filePath = path.join(pdfDir, filename);
             fs.writeFileSync(filePath, pdfBuffer);
             const pdfUrlPath = `/admin/pdfs/${filename}`;
-            await sendApplicationEmail(saved, null, application.email, pdfUrlPath);
+            // Attach the generated PDF to the notification email (and keep the admin link)
+            await sendApplicationEmail(saved, pdfBuffer, application.email, pdfUrlPath);
         } catch (e) {
             console.error('Failed to save PDF to disk:', e && e.message ? e.message : e);
             // Fallback to attaching the PDF if saving fails
