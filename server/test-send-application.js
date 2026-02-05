@@ -2,17 +2,19 @@
 import 'dotenv/config';
 import { sendApplicationEmail } from './services/emailService.js';
 
+// Test script to send a fake volunteer application email.
+// Usage: from the `server` folder run `node test-send-application.js`
+
 const application = {
-    id: 'test-application-001',
-    full_name: 'Test Volunteer',
-    email: 'test-volunteer@example.com',
-    phone: '01234 567890',
-    role: 'Volunteer Helper',
-    referee_name: 'Referee Name'
+    id: 'test-app-1',
+    full_name: 'Test Applicant',
+    email: 'applicant@example.com',
+    phone: '0123456789',
+    role: 'Volunteer'
 };
 
-// Minimal PDF-like buffer for attachment testing
-const pdfBuffer = Buffer.from('This is a test PDF content for application.');
+// Minimal dummy PDF buffer (the email service will attach base64 content)
+const pdfBuffer = Buffer.from('%PDF-1.4\n% Dummy PDF for testing\n');
 
 (async () => {
     try {

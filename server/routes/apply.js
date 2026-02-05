@@ -3,6 +3,9 @@ import { z } from 'zod';
 import { saveApplication, getApplications, getApplicationById, markReferenceRequested } from '../services/db.js';
 import { generateApplicationPdf } from '../services/pdfService.js';
 import { sendApplicationEmail, sendReferenceRequestEmail } from '../services/emailService.js';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 
 const router = Router();
 
@@ -63,7 +66,22 @@ router.post('/apply', async (req, res, next) => {
         const application = parsed.data;
         const saved = await saveApplication(application);
         const pdfBuffer = await generateApplicationPdf(saved);
-        await sendApplicationEmail(saved, pdfBuffer, application.email);
+
+        // Save PDF to admin-protected public folder so admins can view it via a secure admin link
+        try {
+            // Use process.cwd() to reliably locate the server folder when running scripts
+            const pdfDir = path.join(process.cwd(), 'public', 'admin', 'pdfs');
+            fs.mkdirSync(pdfDir, { recursive: true });
+            const filename = `application_${saved.id}.pdf`;
+            const filePath = path.join(pdfDir, filename);
+            fs.writeFileSync(filePath, pdfBuffer);
+            const pdfUrlPath = `/admin/pdfs/${filename}`;
+            await sendApplicationEmail(saved, null, application.email, pdfUrlPath);
+        } catch (e) {
+            console.error('Failed to save PDF to disk:', e && e.message ? e.message : e);
+            // Fallback to attaching the PDF if saving fails
+            await sendApplicationEmail(saved, pdfBuffer, application.email);
+        }
 
         return res.json({ success: true, message: 'Application submitted successfully' });
     } catch (error) {

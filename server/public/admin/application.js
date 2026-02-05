@@ -53,6 +53,22 @@ async function loadApplication() {
         addRow('Submitted', formatDate(data.created_at));
         addRow('Application ID', data.id);
 
+        // Link to hosted PDF for this application (served under the protected /admin path)
+        try {
+            const dt = document.createElement('dt');
+            dt.textContent = 'Application PDF';
+            const dd = document.createElement('dd');
+            const a = document.createElement('a');
+            a.href = `/admin/pdfs/application_${data.id}.pdf`;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            a.textContent = 'Open PDF (admin access required)';
+            dd.appendChild(a);
+            details.append(dt, dd);
+        } catch (e) {
+            // non-fatal
+        }
+
         if (data.referee_email && data.referee_name) {
             referenceActions.style.display = 'flex';
             if (data.reference_requested_at) {
