@@ -85,86 +85,105 @@ if (SENDGRID_API_KEY) {
 }
 
 async function sendMail(message, logLabel) {
-    // Prepare message for transport (convert base64 attachments to Buffer)
-    const msgForTransport = Object.assign({}, message);
-    if (Array.isArray(msgForTransport.attachments)) {
-        msgForTransport.attachments = msgForTransport.attachments.map(att => {
+    // Prepare message copies for each provider.
+    const msgForSmtp = Object.assign({}, message);
+    if (Array.isArray(msgForSmtp.attachments)) {
+        msgForSmtp.attachments = msgForSmtp.attachments.map(att => {
             const copy = Object.assign({}, att);
+            // nodemailer expects Buffer for binary attachments
             if (typeof copy.content === 'string') {
-                try {
-                    copy.content = Buffer.from(copy.content, 'base64');
-                } catch (e) {
-                    // leave as-is on failure
-                }
+                try { copy.content = Buffer.from(copy.content, 'base64'); } catch (e) { /* ignore */ }
             }
             return copy;
         });
     }
 
-    // If SMTP transporter is configured, try it first, but fall back to SendGrid if it fails.
+    const msgForSendGrid = Object.assign({}, message);
+    if (Array.isArray(msgForSendGrid.attachments)) {
+        msgForSendGrid.attachments = msgForSendGrid.attachments.map(att => {
+            const copy = Object.assign({}, att);
+            // SendGrid expects `content` to be a base64-encoded string
+            if (Buffer.isBuffer(copy.content)) {
+                copy.content = copy.content.toString('base64');
+            } else if (typeof copy.content === 'string') {
+                // assume it's already base64 or plain text
+                // If it looks like raw text (not base64), convert to base64
+                const looksLikeBase64 = /^[A-Za-z0-9+/=\s]+$/.test(copy.content) && copy.content.length % 4 === 0;
+                if (!looksLikeBase64) {
+                    copy.content = Buffer.from(copy.content).toString('base64');
+                }
+            }
+            // map contentType -> type for SendGrid helper
+            if (copy.contentType && !copy.type) copy.type = copy.contentType;
+            return copy;
+        });
+    }
+
+    // Prefer SendGrid if API key is present — more reliable on restricted hosts.
+    if (SENDGRID_API_KEY) {
+        try {
+            const [response] = await sgMail.send(msgForSendGrid);
+            if (logLabel) {
+                console.log(logLabel, { statusCode: response?.statusCode, headers: response?.headers });
+            }
+            return response;
+        } catch (sgErr) {
+            console.error('SendGrid send failed:', sgErr && (sgErr.message || sgErr));
+            // If SMTP is available, fall back to SMTP
+            if (transporter) {
+                try {
+                    console.warn('Falling back to SMTP due to SendGrid failure');
+                    const result = await transporter.sendMail(msgForSmtp);
+                    return result;
+                } catch (smtpErr) {
+                    console.error('SMTP fallback after SendGrid failure also failed:', smtpErr && smtpErr.message);
+                    // attach fallback info and rethrow
+                    sgErr.fallbackError = smtpErr;
+                    throw sgErr;
+                }
+            }
+            throw sgErr;
+        }
+    }
+
+    // If no SendGrid configured, try SMTP (existing behaviour)
     if (transporter) {
         try {
-            const result = await transporter.sendMail(msgForTransport);
+            const result = await transporter.sendMail(msgForSmtp);
             return result;
         } catch (smtpErr) {
             console.error('SMTP send failed:', smtpErr && smtpErr.message);
-            // If SendGrid is available, try it as a fallback
-            if (SENDGRID_API_KEY) {
-                try {
-                    console.warn('Falling back to SendGrid due to SMTP failure');
-                    const [response] = await sgMail.send(message);
-                    if (logLabel) {
-                        console.log(logLabel, {
-                            statusCode: response?.statusCode,
-                            headers: response?.headers
-                        });
-                    }
-                    return response;
-                } catch (sgErr) {
-                    console.error('SendGrid fallback failed:', sgErr && sgErr.message);
-                    // throw original SMTP error (with SendGrid failure details attached)
-                    smtpErr.fallbackError = sgErr;
-                    throw smtpErr;
-                }
-            }
             throw smtpErr;
         }
     }
 
-    // If no SMTP transporter configured, use SendGrid if available.
-    if (SENDGRID_API_KEY) {
-        const [response] = await sgMail.send(message);
-        if (logLabel) {
-            console.log(logLabel, {
-                statusCode: response?.statusCode,
-                headers: response?.headers
-            });
-        }
-        return response;
-    }
-
-    throw new Error('Email is not configured. Set SMTP settings or SENDGRID_API_KEY, EMAIL_FROM, EMAIL_TO.');
+    throw new Error('Email is not configured. Set SENDGRID_API_KEY or SMTP settings (EMAIL_USER/EMAIL_PASS, SMTP_HOST, SMTP_PORT).');
 }
 
-export async function sendApplicationEmail(application, pdfBuffer, replyTo) {
+export async function sendApplicationEmail(application, pdfBuffer, replyTo, pdfUrl) {
     if (!EMAIL_FROM || !EMAIL_TO) {
         throw new Error('Email is not configured. Set EMAIL_FROM and EMAIL_TO.');
     }
+
+    const attachments = [];
+    if (pdfBuffer) {
+        attachments.push({
+            content: pdfBuffer,
+            filename: `application_${application.full_name.replace(/\s+/g, '_')}.pdf`,
+            contentType: 'application/pdf',
+            disposition: 'attachment'
+        });
+    }
+
+    const pdfLink = pdfUrl ? `${APP_BASE_URL.replace(/\/$/, '')}${pdfUrl}` : null;
 
     const email = {
         to: EMAIL_TO,
         from: EMAIL_FROM,
         replyTo: replyTo,
         subject: `New Volunteer Application – ${application.full_name}`,
-        text: `A new volunteer application was received.\n\nName: ${application.full_name}\nEmail: ${application.email}\nPhone: ${application.phone}\nRole: ${application.role}\n\nView in dashboard: ${APP_BASE_URL}/admin/applications/${application.id}`,
-        attachments: [
-            {
-                content: pdfBuffer,
-                filename: `application_${application.full_name.replace(/\s+/g, '_')}.pdf`,
-                contentType: 'application/pdf',
-                disposition: 'attachment'
-            }
-        ]
+        text: `A new volunteer application was received.\n\nName: ${application.full_name}\nEmail: ${application.email}\nPhone: ${application.phone}\nRole: ${application.role}\n\nView in dashboard: ${APP_BASE_URL}/admin/applications/${application.id}` + (pdfLink ? `\n\nView PDF: ${pdfLink}` : ''),
+        attachments
     };
 
     try {
