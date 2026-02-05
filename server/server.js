@@ -267,6 +267,13 @@ function requireAdminAuth(req, res, next) {
         return res.status(500).json({ success: false, message: 'Admin credentials not configured' });
     }
 
+    // Allow the admin login page to be accessed without an existing session
+    // to avoid a redirect loop where `/admin/login` is protected by the admin
+    // middleware itself.
+    if (req.originalUrl && req.originalUrl.startsWith('/admin/login')) {
+        return next();
+    }
+
     if (hasValidSession(req)) {
         return next();
     }
