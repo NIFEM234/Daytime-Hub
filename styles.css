@@ -4193,6 +4193,17 @@ ul {
     z-index: 1100;
 }
 
+/* Hide the typed helper text entirely (remove floating "How can I help you today?") */
+#chatbot-note,
+.typing-text,
+.typing-dots,
+#chatbot-label {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
 .typing-text {
     display: inline-block;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', monospace;

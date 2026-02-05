@@ -504,6 +504,32 @@ function closeChatWindow() {
     chatMessages.innerHTML = '';
     const note = document.getElementById('chatbot-note');
     if (note) note.style.display = 'block';
+    // Stop any active voice recognition or speech when chat is closed.
+    try {
+        if (recognition && isListening) {
+            recognition.stop();
+            isListening = false;
+            if (voiceBtn) voiceBtn.textContent = '🎤';
+        }
+    } catch (e) {
+        console.error('Error stopping recognition on close:', e);
+    }
+
+    try {
+        if (typeof speechSynthesis !== 'undefined' && speechSynthesis.speaking) {
+            speechSynthesis.cancel();
+            isSpeaking = false;
+            setSpeakingState(false);
+        }
+    } catch (e) {
+        console.error('Error cancelling speech on close:', e);
+    }
+
+    // Reset voice UI state
+    voiceDraftText = '';
+    lastInputWasVoice = false;
+    updateVoiceStatus('hidden');
+
     // Do not automatically schedule another peek after closing due to inactivity.
 }
 
@@ -738,6 +764,8 @@ chatbotToggle.addEventListener('click', () => {
     } else {
         // Opening: show and add greeting
         chatWindow.style.display = 'flex';
+        // Speak the greeting aloud when opening the chat so users hear the prompt.
+        speakOnNextBotMessage = true;
         addMessage('Hello! Thank you for getting in touch. How may I assist you today?');
         const note = document.getElementById('chatbot-note');
         if (note) note.style.display = 'none';
