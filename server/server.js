@@ -160,11 +160,25 @@ const corsAllowlist = (process.env.CORS_ORIGIN || 'http://localhost:3000,http://
     .filter(Boolean);
 const allowAllOrigins = process.env.DEV_ALLOW_ALL_CORS === 'true' || corsAllowlist.includes('*');
 
+// Normalize Origin header to avoid literal 'undefined'/'null' values flooding logs.
+// Some clients or proxies may send the string 'undefined' which makes the CORS
+// origin checks noisy; remove it so the cors middleware treats the request
+// as same-origin (no Origin header).
+app.use((req, _res, next) => {
+    const o = req.headers.origin;
+    if (typeof o === 'string' && (o === 'undefined' || o === 'null')) {
+        delete req.headers.origin;
+    }
+    next();
+});
+
 app.use(cors({
     origin: (origin, callback) => {
         // Only log origin checks when an origin header is present to avoid noise from server/internal requests
         try {
-            if (origin) console.log('CORS check - origin:', origin, 'allowAllOrigins:', allowAllOrigins);
+            if (typeof origin === 'string' && origin && origin !== 'undefined') {
+                console.log('CORS check - origin:', origin, 'allowAllOrigins:', allowAllOrigins);
+            }
         } catch (e) {
             /* ignore logging errors */
         }
