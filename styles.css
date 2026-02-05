@@ -2768,17 +2768,20 @@ body {
 .form-consent {
     display: flex;
     gap: 0.75rem;
-    align-items: flex-start;
-    font-size: 0.85rem;
+    align-items: center;
+    /* center the checkbox vertically with the label */
+    font-size: 0.95rem;
     color: #5b6b70;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
 }
 
 .form-status {
     margin: 1rem 0 0;
     text-align: center;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     color: #5b6b70;
+    display: block;
+    width: 100%;
 }
 
 .form-status.success {
@@ -2799,7 +2802,11 @@ body {
 }
 
 .form-consent input {
-    margin-top: 0.2rem;
+    margin: 0;
+    width: 1.15rem;
+    height: 1.15rem;
+    flex: 0 0 auto;
+    accent-color: var(--primary);
 }
 
 .required {
@@ -2809,6 +2816,25 @@ body {
 .volunteer-submit {
     background: #2f6d6c;
     border-radius: 10px;
+    color: var(--white);
+    padding: 0.9rem 1.1rem;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    font-weight: 700;
+    width: 100%;
+}
+
+/* On wider screens keep the button comfortably sized but centered */
+@media (min-width: 900px) {
+    .volunteer-submit {
+        width: auto;
+        min-width: 260px;
+        padding: 0.9rem 1.4rem;
+    }
 }
 
 .submission-modal {

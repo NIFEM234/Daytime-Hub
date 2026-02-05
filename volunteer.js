@@ -42,12 +42,34 @@ if (form) {
         }, 3500);
     };
 
+    const setStatus = (message, type) => {
+        // type: 'idle' | 'error' | 'success'
+        if (!statusEl) return;
+        statusEl.textContent = message || '';
+        statusEl.className = 'form-status';
+        statusEl.classList.remove('error', 'success', 'form-status--highlight');
+        if (type === 'error') statusEl.classList.add('error');
+        if (type === 'success') statusEl.classList.add('success', 'form-status--highlight');
+        // ensure important messages are visible on small screens
+        try {
+            if (type === 'error' || type === 'success') {
+                statusEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                statusEl.focus?.();
+            }
+        } catch (e) {
+            // ignore scrolling errors in older browsers
+        }
+    };
+
+    const isValidEmail = (value) => {
+        if (!value) return false;
+        // simple email check
+        return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value);
+    };
+
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
-        if (statusEl) {
-            statusEl.textContent = 'Sending your application...';
-            statusEl.className = 'form-status';
-        }
+        setStatus('Sending your application...', 'idle');
         if (submitBtn) submitBtn.disabled = true;
 
         const formData = new FormData(form);
@@ -58,11 +80,45 @@ if (form) {
 
         const selectedRole = formData.get('role');
         const foodHygieneCertificate = formData.get('foodHygieneCertificate');
-        if (selectedRole?.includes('Kitchen') && foodHygieneCertificate !== 'Yes') {
-            if (statusEl) {
-                statusEl.textContent = 'Kitchen roles require a Level 2 Food Hygiene Certificate.';
-                statusEl.classList.add('error');
+
+        // Client-side validation for required fields to give immediate feedback
+        const requiredChecks = [
+            { name: 'fullName', label: 'Full name' },
+            { name: 'email', label: 'Email address' },
+            { name: 'address', label: 'Address' },
+            { name: 'postcode', label: 'Postcode' },
+            { name: 'phone', label: 'Phone number' },
+            { name: 'emergencyName', label: 'Emergency contact name' },
+            { name: 'emergencyPhone', label: 'Emergency contact phone' },
+            { name: 'role', label: 'Volunteer role' },
+            { name: 'availability', label: 'Availability' },
+            { name: 'nationalityVisa', label: 'Nationality / Visa status' }
+        ];
+
+        for (const chk of requiredChecks) {
+            const v = formData.get(chk.name);
+            if (!v || (typeof v === 'string' && !v.trim())) {
+                setStatus(`${chk.label} is required.`, 'error');
+                const el = form.querySelector(`[name="${chk.name}"]`);
+                if (el && typeof el.focus === 'function') el.focus();
+                if (submitBtn) submitBtn.disabled = false;
+                return;
             }
+        }
+
+        // Validate email format
+        const emailVal = formData.get('email')?.toString?.().trim();
+        if (!isValidEmail(emailVal)) {
+            setStatus('Please enter a valid email address.', 'error');
+            const el = form.querySelector('[name="email"]');
+            if (el && typeof el.focus === 'function') el.focus();
+            if (submitBtn) submitBtn.disabled = false;
+            return;
+        }
+
+        // Kitchen-specific check
+        if (selectedRole?.toString().includes('Kitchen') && foodHygieneCertificate !== 'Yes') {
+            setStatus('Kitchen roles require a Level 2 Food Hygiene Certificate.', 'error');
             if (submitBtn) submitBtn.disabled = false;
             return;
         }
