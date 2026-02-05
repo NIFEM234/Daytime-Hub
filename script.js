@@ -20,12 +20,10 @@ document.addEventListener('DOMContentLoaded', function () {
             if (e.key === 'Escape') setOpen(false);
         });
 
-        // Close when clicking outside of nav
-        document.addEventListener('click', (e) => {
-            if (!navbar.contains(e.target) && navbar.getAttribute('data-open') === 'true') {
-                setOpen(false);
-            }
-        });
+        // NOTE: we intentionally do NOT close the nav when clicking elsewhere on the page.
+        // The nav should remain visible until the user explicitly closes it via the
+        // toggle (X) or presses Escape. This prevents it disappearing while the user
+        // scrolls or interacts with page content.
     }
     if (window.location.protocol === 'file:') {
         const base = document.querySelector('base');
@@ -122,12 +120,22 @@ document.addEventListener('DOMContentLoaded', function () {
         const currentY = window.scrollY;
         const delta = currentY - lastScrollY;
 
+        // If the mobile nav is currently open, keep the navbar visible so the
+        // dropdown remains on-screen while the user scrolls. Only hide when
+        // nav is closed.
+        const isNavOpen = navbar.getAttribute('data-open') === 'true';
+
         if (currentY <= 10) {
             navbar.classList.remove('navbar--hidden');
             navbar.classList.remove('navbar--scrolled');
-        } else if (delta > 8) {
-            navbar.classList.add('navbar--hidden');
-        } else if (delta < -8) {
+        } else if (!isNavOpen) {
+            if (delta > 8) {
+                navbar.classList.add('navbar--hidden');
+            } else if (delta < -8) {
+                navbar.classList.remove('navbar--hidden');
+            }
+        } else {
+            // nav open -> ensure navbar is visible
             navbar.classList.remove('navbar--hidden');
         }
 

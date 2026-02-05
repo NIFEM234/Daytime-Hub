@@ -3708,6 +3708,15 @@ ul {
         height: 20px;
     }
 
+    /* Phone: hide chatbot label and typing animation so only icon shows */
+    #chatbot-label,
+    #chatbot .typing-dots {
+        display: none !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+
+
     #chat-window {
         width: calc(92vw - 24px);
         max-width: 320px;
