@@ -202,9 +202,15 @@ app.use(cors({
         // Treat missing Origin (same-origin/non-browser clients) as allowed
         if (!origin) return callback(null, true);
 
-        // Reject explicit 'null' or file: origins
-        if (origin === 'null') return callback(new Error('Null origin is not allowed'));
-        if (typeof origin === 'string' && origin.startsWith('file:')) return callback(new Error('file:// origins are not allowed'));
+        // Reject explicit 'null' or file: origins unless explicitly allowed via env for debugging/dev
+        if (origin === 'null') {
+            if (process.env.ALLOW_NULL_ORIGIN === 'true') return callback(null, true);
+            return callback(new Error('Null origin is not allowed'));
+        }
+        if (typeof origin === 'string' && origin.startsWith('file:')) {
+            if (process.env.ALLOW_FILE_ORIGIN === 'true') return callback(null, true);
+            return callback(new Error('file:// origins are not allowed'));
+        }
 
         // Exact-match check against the allowlist
         if (corsAllowlist.includes(origin)) return callback(null, true);
