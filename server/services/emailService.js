@@ -16,17 +16,36 @@ const EMAIL_USER = process.env.EMAIL_USER;
 const EMAIL_PASS = process.env.EMAIL_PASS;
 
 const canUseSmtp = Boolean(EMAIL_USER && EMAIL_PASS && SMTP_HOST && SMTP_PORT);
-const transporter = canUseSmtp
-    ? nodemailer.createTransport({
-        host: SMTP_HOST,
-        port: SMTP_PORT,
-        secure: SMTP_SECURE,
-        auth: {
-            user: EMAIL_USER,
-            pass: EMAIL_PASS
-        }
-    })
-    : null;
+
+let transporter = null;
+if (canUseSmtp) {
+    try {
+        transporter = nodemailer.createTransport({
+            host: SMTP_HOST,
+            port: SMTP_PORT,
+            secure: SMTP_SECURE,
+            auth: {
+                user: EMAIL_USER,
+                pass: EMAIL_PASS
+            },
+            connectionTimeout: 20000,
+            greetingTimeout: 20000,
+            socketTimeout: 20000,
+            logger: true,
+            debug: false,
+            tls: {
+                rejectUnauthorized: true
+            }
+        });
+
+        transporter.verify()
+            .then(() => console.log('SMTP transporter verified'))
+            .catch((err) => console.error('SMTP transporter verify failed:', err && err.message));
+    } catch (err) {
+        console.error('Failed to create SMTP transporter with debug options:', err && err.message);
+        transporter = null;
+    }
+}
 
 if (SENDGRID_API_KEY) {
     sgMail.setApiKey(SENDGRID_API_KEY);
@@ -34,7 +53,24 @@ if (SENDGRID_API_KEY) {
 
 async function sendMail(message, logLabel) {
     if (transporter) {
-        return transporter.sendMail(message);
+        // Nodemailer expects attachment `content` to be a Buffer (or string with `encoding`).
+        // Convert any base64-encoded attachment content into Buffer so mail clients can preview PDFs.
+        const msgForTransport = Object.assign({}, message);
+        if (Array.isArray(msgForTransport.attachments)) {
+            msgForTransport.attachments = msgForTransport.attachments.map(att => {
+                const copy = Object.assign({}, att);
+                if (typeof copy.content === 'string') {
+                    try {
+                        // assume base64 string -> convert to Buffer
+                        copy.content = Buffer.from(copy.content, 'base64');
+                    } catch (e) {
+                        // leave content as-is if conversion fails
+                    }
+                }
+                return copy;
+            });
+        }
+        return transporter.sendMail(msgForTransport);
     }
     if (!SENDGRID_API_KEY) {
         throw new Error('Email is not configured. Set SMTP settings or SENDGRID_API_KEY, EMAIL_FROM, EMAIL_TO.');

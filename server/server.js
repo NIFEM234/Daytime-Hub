@@ -221,6 +221,8 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: false }));
+// Protect admin static assets with authentication before serving general public files
+app.use('/admin', requireAdminAuth, express.static(path.join(publicDir, 'admin')));
 app.use(express.static(publicDir));
 app.use('/img', express.static(siteImgDir));
 app.use('/video', express.static(siteVideoDir));
