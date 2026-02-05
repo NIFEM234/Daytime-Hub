@@ -202,14 +202,21 @@ app.use(cors({
         // Treat missing Origin (same-origin/non-browser clients) as allowed
         if (!origin) return callback(null, true);
 
-        // Reject explicit 'null' or file: origins
-        if (origin === 'null') return callback(new Error('Null origin is not allowed'));
-        if (typeof origin === 'string' && origin.startsWith('file:')) return callback(new Error('file:// origins are not allowed'));
+        // Reject explicit 'null' or file: origins by denying CORS (don't throw an error)
+        if (origin === 'null') {
+            console.warn('CORS denied origin: null');
+            return callback(null, false);
+        }
+        if (typeof origin === 'string' && origin.startsWith('file:')) {
+            console.warn('CORS denied origin (file:):', origin);
+            return callback(null, false);
+        }
 
         // Exact-match check against the allowlist
         if (corsAllowlist.includes(origin)) return callback(null, true);
 
-        return callback(new Error('Not allowed by CORS'));
+        console.warn('CORS denied origin:', origin, 'allowed list:', corsAllowlist);
+        return callback(null, false);
     },
     credentials: true
 }));
