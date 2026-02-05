@@ -52,37 +52,65 @@ if (SENDGRID_API_KEY) {
 }
 
 async function sendMail(message, logLabel) {
-    if (transporter) {
-        // Nodemailer expects attachment `content` to be a Buffer (or string with `encoding`).
-        // Convert any base64-encoded attachment content into Buffer so mail clients can preview PDFs.
-        const msgForTransport = Object.assign({}, message);
-        if (Array.isArray(msgForTransport.attachments)) {
-            msgForTransport.attachments = msgForTransport.attachments.map(att => {
-                const copy = Object.assign({}, att);
-                if (typeof copy.content === 'string') {
-                    try {
-                        // assume base64 string -> convert to Buffer
-                        copy.content = Buffer.from(copy.content, 'base64');
-                    } catch (e) {
-                        // leave content as-is if conversion fails
-                    }
+    // Prepare message for transport (convert base64 attachments to Buffer)
+    const msgForTransport = Object.assign({}, message);
+    if (Array.isArray(msgForTransport.attachments)) {
+        msgForTransport.attachments = msgForTransport.attachments.map(att => {
+            const copy = Object.assign({}, att);
+            if (typeof copy.content === 'string') {
+                try {
+                    copy.content = Buffer.from(copy.content, 'base64');
+                } catch (e) {
+                    // leave as-is on failure
                 }
-                return copy;
-            });
-        }
-        return transporter.sendMail(msgForTransport);
-    }
-    if (!SENDGRID_API_KEY) {
-        throw new Error('Email is not configured. Set SMTP settings or SENDGRID_API_KEY, EMAIL_FROM, EMAIL_TO.');
-    }
-    const [response] = await sgMail.send(message);
-    if (logLabel) {
-        console.log(logLabel, {
-            statusCode: response?.statusCode,
-            headers: response?.headers
+            }
+            return copy;
         });
     }
-    return response;
+
+    // If SMTP transporter is configured, try it first, but fall back to SendGrid if it fails.
+    if (transporter) {
+        try {
+            const result = await transporter.sendMail(msgForTransport);
+            return result;
+        } catch (smtpErr) {
+            console.error('SMTP send failed:', smtpErr && smtpErr.message);
+            // If SendGrid is available, try it as a fallback
+            if (SENDGRID_API_KEY) {
+                try {
+                    console.warn('Falling back to SendGrid due to SMTP failure');
+                    const [response] = await sgMail.send(message);
+                    if (logLabel) {
+                        console.log(logLabel, {
+                            statusCode: response?.statusCode,
+                            headers: response?.headers
+                        });
+                    }
+                    return response;
+                } catch (sgErr) {
+                    console.error('SendGrid fallback failed:', sgErr && sgErr.message);
+                    // throw original SMTP error (with SendGrid failure details attached)
+                    smtpErr.fallbackError = sgErr;
+                    throw smtpErr;
+                }
+            }
+            throw smtpErr;
+        }
+    }
+
+    // If no SMTP transporter configured, use SendGrid if available.
+    if (SENDGRID_API_KEY) {
+        const [response] = await sgMail.send(message);
+        if (logLabel) {
+            console.log(logLabel, {
+                statusCode: response?.statusCode,
+                headers: response?.headers
+            });
+        }
+        return response;
+    }
+
+    throw new Error('Email is not configured. Set SMTP settings or SENDGRID_API_KEY, EMAIL_FROM, EMAIL_TO.');
 }
 
 export async function sendApplicationEmail(application, pdfBuffer, replyTo) {
