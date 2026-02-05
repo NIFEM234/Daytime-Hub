@@ -739,7 +739,9 @@ function sendMessage(triggeredBySendButton = false) {
     if (!chatInput) return;
     const message = chatInput.value.trim();
     if (message) {
-        speakOnNextBotMessage = triggeredBySendButton;
+        // Mark that the next bot message should be spoken because the user just asked a question.
+        // Speak for any explicit user send (button, Enter, or voice note).
+        speakOnNextBotMessage = true;
         if (lastInputWasVoice || voiceDraftText) {
             addVoiceNoteMessage(message);
         } else {
@@ -764,8 +766,6 @@ chatbotToggle.addEventListener('click', () => {
     } else {
         // Opening: show and add greeting
         chatWindow.style.display = 'flex';
-        // Speak the greeting aloud when opening the chat so users hear the prompt.
-        speakOnNextBotMessage = true;
         addMessage('Hello! Thank you for getting in touch. How may I assist you today?');
         const note = document.getElementById('chatbot-note');
         if (note) note.style.display = 'none';

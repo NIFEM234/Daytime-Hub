@@ -130,6 +130,39 @@
             font-size: 0.8rem;
             display: inline-block;
         }
+
+        /* Responsive improvements for small screens */
+        #content {
+            overflow-x: auto;
+        }
+
+        #content table {
+            min-width: 720px;
+            /* allow horizontal scroll instead of squishing columns */
+            border-collapse: collapse;
+        }
+
+        @media (max-width: 700px) {
+            main {
+                padding: 1rem;
+            }
+
+            header {
+                padding: 0.8rem 1rem;
+            }
+
+            .header-inner {
+                gap: 0.5rem;
+            }
+
+            h1 {
+                font-size: 1.15rem;
+            }
+
+            input[type="search"] {
+                flex-basis: 160px;
+            }
+        }
     </style>
 </head>
 
