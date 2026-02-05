@@ -28,9 +28,9 @@ if (canUseSmtp) {
                 user: EMAIL_USER,
                 pass: EMAIL_PASS
             },
-            connectionTimeout: 20000,
-            greetingTimeout: 20000,
-            socketTimeout: 20000,
+            connectionTimeout: 30000,
+            greetingTimeout: 30000,
+            socketTimeout: 30000,
             logger: true,
             debug: false,
             tls: {
@@ -40,7 +40,40 @@ if (canUseSmtp) {
 
         transporter.verify()
             .then(() => console.log('SMTP transporter verified'))
-            .catch((err) => console.error('SMTP transporter verify failed:', err && err.message));
+            .catch(async (err) => {
+                console.error('SMTP transporter verify failed:', err && err.message);
+                // If initial config uses implicit SSL (port 465 / secure true), try STARTTLS on 587 as a fallback
+                try {
+                    const shouldTryFallback = (SMTP_PORT === 465 || SMTP_SECURE === true || SMTP_PORT === undefined);
+                    if (shouldTryFallback) {
+                        const altPort = 587;
+                        const altSecure = false; // use STARTTLS
+                        console.warn(`Attempting SMTP fallback to ${SMTP_HOST}:${altPort} (STARTTLS)`);
+                        const altTransport = nodemailer.createTransport({
+                            host: SMTP_HOST,
+                            port: altPort,
+                            secure: altSecure,
+                            auth: {
+                                user: EMAIL_USER,
+                                pass: EMAIL_PASS
+                            },
+                            connectionTimeout: 30000,
+                            greetingTimeout: 30000,
+                            socketTimeout: 30000,
+                            logger: true,
+                            debug: false,
+                            tls: {
+                                rejectUnauthorized: true
+                            }
+                        });
+                        await altTransport.verify();
+                        transporter = altTransport;
+                        console.log('SMTP fallback transporter verified (STARTTLS)');
+                    }
+                } catch (altErr) {
+                    console.error('SMTP fallback verify failed:', altErr && altErr.message);
+                }
+            });
     } catch (err) {
         console.error('Failed to create SMTP transporter with debug options:', err && err.message);
         transporter = null;
