@@ -27,13 +27,31 @@ import { fileURLToPath } from 'url';
 import crypto from 'crypto';
 import fs from 'fs';
 import https from 'https';
+import { createClient as createRedisClient } from 'redis';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const ADMIN_USER = process.env.ADMIN_USER || '';
 const ADMIN_PASS = process.env.ADMIN_PASS || '';
 const SESSION_COOKIE = 'admin_session';
-const sessions = new Map();
+let sessions = new Map();
+let redisClient = null;
+const sessionTtlSeconds = Number(process.env.SESSION_TTL_SECONDS || 7 * 24 * 3600); // default 7 days
+
+if (process.env.REDIS_URL) {
+    try {
+        redisClient = createRedisClient({ url: process.env.REDIS_URL });
+        redisClient.connect().then(() => {
+            console.log('Connected to Redis for session store');
+        }).catch((err) => {
+            console.error('Failed to connect to Redis:', err);
+            redisClient = null;
+        });
+    } catch (err) {
+        console.error('Redis client initialization error:', err);
+        redisClient = null;
+    }
+}
 const isProd = process.env.NODE_ENV === 'production';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -162,10 +180,15 @@ app.use(cors({
 
 
         // For browser requests, a missing Origin header usually means a same-origin navigation
-        // or a non-browser client — allow those by default. Explicitly reject 'null' and 'file:' origins.
+        // or a non-browser client — allow those by default. Explicitly reject 'null' origins.
+        // Allow 'file:' origins only when explicitly enabled for development via
+        // the DEV_ALLOW_FILE_ORIGINS env var (set to 'true').
         if (!origin) return callback(null, true);
         if (origin === 'null') return callback(new Error('Null origin is not allowed'));
-        if (typeof origin === 'string' && origin.startsWith('file:')) return callback(new Error('file:// origins are not allowed'));
+        if (typeof origin === 'string' && origin.startsWith('file:')) {
+            if (process.env.DEV_ALLOW_FILE_ORIGINS === 'true') return callback(null, true);
+            return callback(new Error('file:// origins are not allowed'));
+        }
 
         // Exact-match check against the allowlist
         if (corsAllowlist.includes(origin)) return callback(null, true);
@@ -210,18 +233,63 @@ function parseCookies(cookieHeader = '') {
     }, {});
 }
 
-function hasValidSession(req) {
-    const cookies = parseCookies(req.headers.cookie || '');
-    const token = cookies[SESSION_COOKIE];
-    return token && sessions.has(token);
+async function sessionHasToken(token) {
+    if (!token) return false;
+    if (redisClient) {
+        try {
+            const val = await redisClient.get(`session:${token}`);
+            return !!val;
+        } catch (err) {
+            console.error('Redis get error:', err);
+            return false;
+        }
+    }
+    const item = sessions.get(token);
+    if (!item) return false;
+    if (item.expiresAt && Date.now() > item.expiresAt) {
+        sessions.delete(token);
+        return false;
+    }
+    return true;
 }
 
-function requireAdminAuth(req, res, next) {
+async function sessionSetToken(token, data, ttlSeconds = sessionTtlSeconds) {
+    if (redisClient) {
+        try {
+            await redisClient.setEx(`session:${token}`, ttlSeconds, JSON.stringify(data));
+            return;
+        } catch (err) {
+            console.error('Redis setEx error:', err);
+        }
+    }
+    sessions.set(token, { data, expiresAt: Date.now() + ttlSeconds * 1000 });
+}
+
+async function sessionDeleteToken(token) {
+    if (!token) return;
+    if (redisClient) {
+        try {
+            await redisClient.del(`session:${token}`);
+            return;
+        } catch (err) {
+            console.error('Redis del error:', err);
+        }
+    }
+    sessions.delete(token);
+}
+
+async function hasValidSession(req) {
+    const cookies = parseCookies(req.headers.cookie || '');
+    const token = cookies[SESSION_COOKIE];
+    return token && await sessionHasToken(token);
+}
+
+async function requireAdminAuth(req, res, next) {
     if (!ADMIN_USER || !ADMIN_PASS) {
         return res.status(500).json({ success: false, message: 'Admin credentials not configured' });
     }
 
-    if (hasValidSession(req)) {
+    if (await hasValidSession(req)) {
         return next();
     }
 
@@ -246,15 +314,17 @@ app.get('/admin/login', (_req, res) => {
     res.sendFile(path.join(publicDir, 'admin', 'login.html'));
 });
 
-app.post('/admin/login', loginLimiter, (req, res) => {
+app.post('/admin/login', loginLimiter, async (req, res) => {
     const { username, password, returnTo } = req.body || {};
     if (username !== ADMIN_USER || password !== ADMIN_PASS) {
         return res.redirect('/admin/login?error=invalid');
     }
 
     const token = crypto.randomBytes(24).toString('hex');
-    sessions.set(token, { createdAt: Date.now() });
-    const cookieOptions = `HttpOnly; Path=/; SameSite=Lax${isProd ? '; Secure' : ''}`;
+    await sessionSetToken(token, { createdAt: Date.now() });
+    const cookieMaxAge = sessionTtlSeconds; // seconds
+    const cookieSameSite = isProd ? 'Strict' : 'Lax';
+    const cookieOptions = `HttpOnly; Path=/; Max-Age=${cookieMaxAge}; SameSite=${cookieSameSite}${isProd ? '; Secure' : ''}`;
     res.setHeader('Set-Cookie', `${SESSION_COOKIE}=${token}; ${cookieOptions}`);
     const safeReturnTo = typeof returnTo === 'string' && returnTo.startsWith('/') && !returnTo.startsWith('//')
         ? returnTo
@@ -262,13 +332,13 @@ app.post('/admin/login', loginLimiter, (req, res) => {
     return res.redirect(safeReturnTo);
 });
 
-app.post('/admin/logout', (req, res) => {
+app.post('/admin/logout', async (req, res) => {
     const cookies = parseCookies(req.headers.cookie || '');
     const token = cookies[SESSION_COOKIE];
     if (token) {
-        sessions.delete(token);
+        await sessionDeleteToken(token);
     }
-    const cookieOptions = `Max-Age=0; Path=/; SameSite=Lax${isProd ? '; Secure' : ''}`;
+    const cookieOptions = `Max-Age=0; Path=/; SameSite=${isProd ? 'Strict' : 'Lax'}${isProd ? '; Secure' : ''}`;
     res.setHeader('Set-Cookie', `${SESSION_COOKIE}=; ${cookieOptions}`);
     return res.redirect('/admin/login');
 });
