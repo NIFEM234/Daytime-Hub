@@ -508,32 +508,36 @@ body {
         margin-right: 8px;
     }
 
-    /* When nav is open (aria/state on header), show stacked nav */
+    /* When nav is open (aria/state on header), show a compact dropdown anchored under the toggle */
     .navbar[data-open="true"] nav {
         display: flex;
         position: absolute;
-        left: 0;
-        right: 0;
+        /* anchor to the right so it sits under the hamburger/X */
+        right: 12px;
+        left: auto;
         top: calc(var(--nav-height) - 8px);
-        /* lift dropdown slightly to close gap */
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.72));
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.88));
         flex-direction: column;
         gap: 0.5rem;
-        padding: 0.75rem 1rem 1rem;
+        padding: 0.5rem 0.75rem;
         box-shadow: var(--glass-shadow);
         border: 1px solid var(--glass-border);
         backdrop-filter: blur(var(--glass-blur)) saturate(170%);
         -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(170%);
-        border-bottom-left-radius: 12px;
-        border-bottom-right-radius: 12px;
-        z-index: 60;
+        border-radius: 12px;
+        z-index: 120;
+        min-width: 160px;
+        max-width: 86vw;
+        width: auto;
+        transform-origin: top right;
     }
 
     .navbar[data-open="true"] nav a {
-        padding: 0.6rem 0.25rem;
+        padding: 0.5rem 0.75rem;
         margin: 0;
-        font-size: 1rem;
+        font-size: 0.98rem;
         border-radius: 8px;
+        white-space: nowrap;
     }
 
     /* Glassy link backgrounds and hover states inside the dropdown */
@@ -3689,6 +3693,26 @@ ul {
     #chatbot.chatbot--peek #chat-window {
         opacity: 0;
         pointer-events: none;
+    }
+
+    /* Smaller chatbot button and window for phone view */
+    #chatbot-toggle {
+        width: 48px;
+        height: 48px;
+        border-radius: 999px;
+        padding: 6px;
+    }
+
+    #chatbot-toggle .chatbot-icon {
+        width: 20px;
+        height: 20px;
+    }
+
+    #chat-window {
+        width: calc(92vw - 24px);
+        max-width: 320px;
+        bottom: 64px;
+        max-height: 60vh;
     }
 }
 

@@ -459,8 +459,10 @@ let lastInputWasVoice = false;
 let speakOnNextBotMessage = false;
 let isSpeaking = false;
 let chatIdleTimer;
-const chatIdleMs = 10000;
-const mobileChatPeekMs = 6500;
+// Increase idle timeout so the chatbot stays visible a bit longer before auto-hiding
+const chatIdleMs = 15000;
+// Mobile peek delay (only used for a single initial peek unless previously seen)
+const mobileChatPeekMs = 9000;
 const mobileChatPeekClass = 'chatbot--peek';
 const mobileChatMq = window.matchMedia('(max-width: 768px)');
 let mobileChatPeekTimer;
@@ -468,16 +470,24 @@ let mobileChatPeekTimer;
 function scheduleMobileChatPeek() {
     if (!chatbot || !mobileChatMq.matches) return;
     clearTimeout(mobileChatPeekTimer);
+    // Only show the initial mobile peek if the user hasn't already seen it.
+    try {
+        const seen = window.localStorage.getItem('chatbotPeekSeen') === 'true';
+        if (seen) return;
+    } catch (e) {
+        // ignore storage errors and allow peek
+    }
     mobileChatPeekTimer = setTimeout(() => {
         if (chatWindow && chatWindow.style.display === 'flex') return;
         chatbot.classList.add(mobileChatPeekClass);
+        try { window.localStorage.setItem('chatbotPeekSeen', 'true'); } catch (e) { }
     }, mobileChatPeekMs);
 }
 
 function showMobileChatbot() {
     if (!chatbot || !mobileChatMq.matches) return;
+    // Explicit show: remove peek state so the full button is visible.
     chatbot.classList.remove(mobileChatPeekClass);
-    scheduleMobileChatPeek();
 }
 
 function closeChatWindow() {
@@ -486,7 +496,7 @@ function closeChatWindow() {
     chatMessages.innerHTML = '';
     const note = document.getElementById('chatbot-note');
     if (note) note.style.display = 'block';
-    scheduleMobileChatPeek();
+    // Do not automatically schedule another peek after closing due to inactivity.
 }
 
 function resetChatIdleTimer() {
@@ -757,10 +767,9 @@ if (chatWindow) {
     });
 }
 
-['scroll', 'touchstart', 'click', 'keydown'].forEach((eventName) => {
-    window.addEventListener(eventName, showMobileChatbot, { passive: true });
-});
-
+// Do not auto-show the chatbot on general page activity (scroll/click/keys).
+// Only schedule an initial peek on mobile once, and thereafter only open when the
+// user explicitly clicks the chatbot toggle.
 if (mobileChatMq.matches) {
     scheduleMobileChatPeek();
 }
