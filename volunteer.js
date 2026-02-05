@@ -1,7 +1,7 @@
 const apiMeta = document.querySelector('meta[name="api-base"]');
 const apiMetaValue = apiMeta?.getAttribute('content')?.trim();
 const isFileOrigin = window.location.protocol === 'file:' || window.location.origin === 'null';
-const API_BASE_URL = apiMetaValue || (isFileOrigin ? 'http://localhost:3000' : '');
+const API_BASE_URL = apiMetaValue || (isFileOrigin ? 'http://daytimehub.org' : '');
 
 const form = document.getElementById('volunteer-form');
 if (form) {

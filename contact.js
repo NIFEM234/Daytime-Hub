@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
     const isLocalhostNonApiPort = isLocalhost && window.location.port && window.location.port !== '3000';
     const apiBase = apiMetaValue
-        || (isFileOrigin ? 'http://localhost:3000' : '')
+        || (isFileOrigin ? 'http://daytimehub.org' : '')
         || (isLocalhostNonApiPort ? 'http://localhost:3000' : '');
 
     form.addEventListener('submit', async (e) => {

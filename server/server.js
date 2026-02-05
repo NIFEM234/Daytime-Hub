@@ -73,7 +73,8 @@ if (!databaseUrl) {
 }
 
 const pool = new Pool({
-    connectionString: databaseUrl
+    connectionString: databaseUrl,
+    ...(process.env.PGSSLMODE === 'require' ? { ssl: { rejectUnauthorized: false } } : {})
 });
 
 const ensureApplicationColumns = async () => {
@@ -97,17 +98,28 @@ const ensureApplicationColumns = async () => {
 };
 
 
-// Improved startup error handling
-(async () => {
-    try {
-        const result = await pool.query('select current_database() as db, inet_server_addr() as host, inet_server_port() as port');
-        console.log('Connected to DB:', result.rows[0]);
-        await ensureApplicationColumns();
-    } catch (error) {
-        console.error('Startup error:', error);
-        process.exit(1);
+// Initialize DB connection with retries but do not exit the process on failure.
+async function initDb() {
+    const maxAttempts = parseInt(process.env.DB_CONNECT_RETRIES || '5', 10);
+    const retryDelay = parseInt(process.env.DB_CONNECT_RETRY_DELAY_MS || '3000', 10);
+    let attempt = 0;
+    while (attempt < maxAttempts) {
+        attempt += 1;
+        try {
+            const result = await pool.query('select current_database() as db, inet_server_addr() as host, inet_server_port() as port');
+            console.log('Connected to DB:', result.rows[0]);
+            await ensureApplicationColumns();
+            return;
+        } catch (error) {
+            console.error(`DB connect attempt ${attempt} failed:`, error && error.message ? error.message : error);
+            if (attempt >= maxAttempts) {
+                console.error('Max DB connect attempts reached; continuing without DB. Some features may be unavailable.');
+                return;
+            }
+            await new Promise((res) => setTimeout(res, retryDelay));
+        }
     }
-})();
+}
 
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
@@ -321,11 +333,11 @@ if (sslKeyPath && sslCertPath && fs.existsSync(sslKeyPath) && fs.existsSync(sslC
         key: fs.readFileSync(sslKeyPath),
         cert: fs.readFileSync(sslCertPath)
     };
-    https.createServer(sslOptions, app).listen(PORT, () => {
-        console.log(`HTTPS server running on port ${PORT}`);
+    https.createServer(sslOptions, app).listen(PORT, '0.0.0.0', () => {
+        console.log(`HTTPS server running on port ${PORT} (bound to 0.0.0.0)`);
     });
 } else {
-    app.listen(PORT, () => {
-        console.log(`Server running on port ${PORT}`);
+    app.listen(PORT, '0.0.0.0', () => {
+        console.log(`Server running on port ${PORT} (bound to 0.0.0.0) - NODE_ENV=${process.env.NODE_ENV}`);
     });
 }
