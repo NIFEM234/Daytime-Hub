@@ -172,31 +172,43 @@ app.use((req, _res, next) => {
     next();
 });
 
+// Diagnostic middleware: log a compact request summary when Origin header is the literal string 'undefined'.
+// This helps identify probes or clients sending a bogus Origin value.
+app.use((req, _res, next) => {
+    try {
+        if (req.headers && req.headers.origin === 'undefined') {
+            const ip = req.headers['x-forwarded-for'] || req.ip || req.socket?.remoteAddress || 'unknown';
+            const summary = {
+                ip,
+                url: req.originalUrl,
+                method: req.method,
+                host: req.headers.host,
+                ua: req.headers['user-agent'] || '',
+                referer: req.headers.referer || ''
+            };
+            console.log('CORS diagnostic - origin literal "undefined"', JSON.stringify(summary));
+        }
+    } catch (e) {
+        /* keep diagnostics best-effort and non-fatal */
+    }
+    next();
+});
+
 app.use(cors({
     origin: (origin, callback) => {
-        // Only log origin checks when an origin header is present to avoid noise from server/internal requests
-        try {
-            if (typeof origin === 'string' && origin && origin !== 'undefined') {
-                console.log('CORS check - origin:', origin, 'allowAllOrigins:', allowAllOrigins);
-            }
-        } catch (e) {
-            /* ignore logging errors */
-        }
-
-        // Allow all origins if explicitly enabled for development/debugging
+        // Allow all origins when explicitly enabled for development/debugging
         if (allowAllOrigins || process.env.DEV_ALLOW_ALL_CORS === 'true') return callback(null, true);
 
-
-        // For browser requests, a missing Origin header usually means a same-origin navigation
-        // or a non-browser client — allow those by default. Explicitly reject 'null' and 'file:' origins.
+        // Treat missing Origin (same-origin/non-browser clients) as allowed
         if (!origin) return callback(null, true);
+
+        // Reject explicit 'null' or file: origins
         if (origin === 'null') return callback(new Error('Null origin is not allowed'));
         if (typeof origin === 'string' && origin.startsWith('file:')) return callback(new Error('file:// origins are not allowed'));
 
         // Exact-match check against the allowlist
         if (corsAllowlist.includes(origin)) return callback(null, true);
 
-        console.warn('CORS blocked origin:', origin, 'allowed list:', corsAllowlist);
         return callback(new Error('Not allowed by CORS'));
     },
     credentials: true
