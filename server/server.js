@@ -162,9 +162,9 @@ const allowAllOrigins = process.env.DEV_ALLOW_ALL_CORS === 'true' || corsAllowli
 
 app.use(cors({
     origin: (origin, callback) => {
-        // Debug: log origin checks
+        // Only log origin checks when an origin header is present to avoid noise from server/internal requests
         try {
-            console.log('CORS check - origin:', origin, 'allowAllOrigins:', allowAllOrigins);
+            if (origin) console.log('CORS check - origin:', origin, 'allowAllOrigins:', allowAllOrigins);
         } catch (e) {
             /* ignore logging errors */
         }
@@ -333,11 +333,13 @@ if (sslKeyPath && sslCertPath && fs.existsSync(sslKeyPath) && fs.existsSync(sslC
         key: fs.readFileSync(sslKeyPath),
         cert: fs.readFileSync(sslCertPath)
     };
-    https.createServer(sslOptions, app).listen(PORT, '0.0.0.0', () => {
+    https.createServer(sslOptions, app).listen(PORT, '0.0.0.0', async () => {
         console.log(`HTTPS server running on port ${PORT} (bound to 0.0.0.0)`);
+        try { await initDb(); } catch (e) { console.error('initDb error after HTTPS listen', e); }
     });
 } else {
-    app.listen(PORT, '0.0.0.0', () => {
+    app.listen(PORT, '0.0.0.0', async () => {
         console.log(`Server running on port ${PORT} (bound to 0.0.0.0) - NODE_ENV=${process.env.NODE_ENV}`);
+        try { await initDb(); } catch (e) { console.error('initDb error after HTTP listen', e); }
     });
 }
