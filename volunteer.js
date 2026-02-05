@@ -124,9 +124,26 @@ if (form) {
                 form.reset();
             } else {
                 const data = await response.json().catch(() => null);
-                if (statusEl) {
-                    statusEl.textContent = data?.message || 'Submission failed. Please try again.';
-                    statusEl.classList.add('error');
+                // If the server returned validation details, surface them to the user
+                if (data && data.errors) {
+                    // zod.flatten() returns { formErrors: [], fieldErrors: { field: [msgs...] } }
+                    const flat = data.errors;
+                    const fieldErrors = flat.fieldErrors || {};
+                    const messages = [];
+                    for (const key of Object.keys(fieldErrors)) {
+                        const arr = fieldErrors[key] || [];
+                        for (const m of arr) messages.push(`${key}: ${m}`);
+                    }
+                    const output = messages.length ? messages.join(' — ') : (data.message || 'Submission failed. Please check the form.');
+                    if (statusEl) {
+                        statusEl.textContent = output;
+                        statusEl.classList.add('error');
+                    }
+                } else {
+                    if (statusEl) {
+                        statusEl.textContent = data?.message || 'Submission failed. Please try again.';
+                        statusEl.classList.add('error');
+                    }
                 }
             }
         } catch (error) {
