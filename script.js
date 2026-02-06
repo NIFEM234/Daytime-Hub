@@ -562,7 +562,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const handleUser = (raw) => {
         const text = (raw || '').trim();
         if (!text) {
-            appendBotMessage("No worries — when you're ready, type a short question. I'm friendly and happy to help!");
+            // If the user has already sent messages, don't repeat the 'No worries' prompt
+            const hasUserMsg = messages && messages.querySelector && messages.querySelector('.user-message');
+            if (!hasUserMsg) {
+                appendBotMessage("No worries — when you're ready, type a short question. I'm friendly and happy to help!");
+            }
             return;
         }
         // append user message and clear input

@@ -674,6 +674,24 @@ body {
         display: block;
         gap: 0;
     }
+
+    /* Center footer bottom content on small screens */
+    .footer-bottom .footer-bottom-inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 0.5rem;
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    .footer-bottom .footer-bottom-inner span,
+    .footer-bottom .footer-bottom-inner a,
+    .footer-bottom .footer-bottom-inner .site-last-updated {
+        display: block;
+        width: 100%;
+    }
 }
 
 /* Hero Section */
@@ -5097,6 +5115,31 @@ ul {
     /* adjust value if you want even more/less space */
 }
 
+/* Mobile: separate creator info and church link into stacked, well-spaced lines */
+@media (max-width: 600px) {
+    .site-last-updated {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 0.8rem;
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    .site-last-updated .footer-church-link {
+        margin-left: 0;
+        display: block;
+        margin-top: 0.6rem;
+        font-weight: 700;
+    }
+
+    .site-last-updated a {
+        display: inline-block;
+        word-break: break-word;
+    }
+}
+
 /* Make partner links look like neutral text while remaining clickable */
 .partners-list a {
     color: var(--light-text);
@@ -5108,7 +5151,8 @@ ul {
 }
 
 .partners-list a:visited {
-    color: var(--light-text);
+    /* Visited partners appear blue to indicate prior visit */
+    color: #1e88e5;
 }
 
 .partners-list a:hover,
