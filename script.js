@@ -644,6 +644,7 @@ if (slides.length) {
             document.body.classList.remove('splash-visible');
             setTimeout(() => {
                 try { splash.remove(); } catch (e) { /* ignore */ }
+                try { document.dispatchEvent(new Event('dth:splashHidden')); } catch (e) { }
             }, 420);
         };
 
@@ -1326,4 +1327,23 @@ function initCookieBanner() {
     }, 10000);
 }
 
-document.addEventListener('DOMContentLoaded', initCookieBanner);
+// Initialize cookie banner only on the homepage and only after the splash is hidden
+document.addEventListener('DOMContentLoaded', () => {
+    const isIndex = window.location.pathname === '/' || window.location.pathname.endsWith('/index.html') || document.body.classList.contains('home');
+    if (!isIndex) return;
+
+    const splash = document.getElementById('dth-splash');
+    if (!splash) {
+        // no splash present — init immediately
+        initCookieBanner();
+        return;
+    }
+
+    // Wait for the splash to be hidden/removed
+    const onHidden = () => {
+        initCookieBanner();
+        document.removeEventListener('dth:splashHidden', onHidden);
+    };
+
+    document.addEventListener('dth:splashHidden', onHidden);
+});

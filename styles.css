@@ -5188,7 +5188,7 @@ ul {
 }
 
 .dth-splash__logo {
-    width: 110px;
+    width: 220px;
     height: auto;
     display: block;
     object-fit: contain;
@@ -5242,5 +5242,46 @@ body.splash-visible {
 
     #dth-splash {
         transition: none;
+    }
+}
+
+/* Logo size overrides for clearer display on high-DPI / data-save views */
+.logo-img {
+    width: 180px !important;
+    height: auto !important;
+    margin-right: 16px !important;
+}
+
+.footer-logo-icon {
+    width: 120px;
+    height: auto;
+    display: inline-block;
+}
+
+@media (max-width: 680px) {
+    .logo-img {
+        width: 120px !important;
+    }
+
+    .dth-splash__logo {
+        width: 160px;
+    }
+
+    .footer-logo-icon {
+        width: 80px;
+    }
+}
+
+@media (max-width: 680px) {
+    .logo-img {
+        width: 76px !important;
+    }
+
+    .dth-splash__logo {
+        width: 120px;
+    }
+
+    .footer-logo-icon {
+        width: 56px;
     }
 }
