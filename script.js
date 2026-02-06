@@ -315,7 +315,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const line = document.createElement('div');
     line.className = 'site-last-updated';
-    line.innerHTML = `Website last updated ${formattedDate} - by <a href="https://mail.google.com/mail/?view=cm&fs=1&to=oluwanifemijosiah02@gmail.com" target="_blank" rel="noopener noreferrer">oluwanifemijosiah02@gmail.com</a>&nbsp;&nbsp;&nbsp;,&nbsp;&nbsp;&nbsp;<a href="tel:+447587993762">07587993762</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://www.gravesendmethodistchurch.org.uk/" target="_blank" rel="noopener noreferrer">Gravesend Methodist Church Link</a>`;
+    line.innerHTML = `Website created and last updated ${formattedDate} - by <a href="https://mail.google.com/mail/?view=cm&fs=1&to=oluwanifemijosiah02@gmail.com" target="_blank" rel="noopener noreferrer">oluwanifemijosiah02@gmail.com</a>, <a href="tel:+447587993762">07587993762</a> <a class="footer-church-link" href="http://www.gravesendmethodistchurch.org.uk/" target="_blank" rel="noopener noreferrer">Gravesend Methodist Church Link</a>`;
 
     footerBottom.appendChild(line);
 });
@@ -339,6 +339,59 @@ document.addEventListener('DOMContentLoaded', function () {
     }, { threshold: 0.2 });
 
     videos.forEach((video) => observer.observe(video));
+});
+
+// About page: play-overlay and interactive video enhancements
+document.addEventListener('DOMContentLoaded', function () {
+    const containers = document.querySelectorAll('.video-hero-container');
+    if (!containers.length) return;
+
+    containers.forEach((container) => {
+        const video = container.querySelector('video');
+        const overlay = container.querySelector('.video-overlay');
+        const btn = container.querySelector('.video-play-button');
+        if (!video) return;
+
+        const play = async () => {
+            try {
+                // attempt to play (muted autoplay could be blocked, explicit user click works)
+                await video.play();
+                container.classList.add('video-playing');
+                video.setAttribute('controls', '');
+            } catch (err) {
+                console.warn('Unable to play video automatically', err);
+            }
+        };
+
+        const pause = () => {
+            try {
+                video.pause();
+                container.classList.remove('video-playing');
+            } catch (err) {
+                // ignore
+            }
+        };
+
+        if (btn) {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                play();
+            });
+        }
+
+        if (overlay) {
+            overlay.addEventListener('click', (e) => {
+                play();
+            });
+        }
+
+        video.addEventListener('play', () => container.classList.add('video-playing'));
+        video.addEventListener('pause', () => container.classList.remove('video-playing'));
+        video.addEventListener('ended', () => {
+            container.classList.remove('video-playing');
+            try { video.currentTime = 0; } catch (e) { }
+        });
+    });
 });
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -396,6 +449,166 @@ document.addEventListener('DOMContentLoaded', function () {
         link.setAttribute('target', '_blank');
         link.setAttribute('rel', 'noopener');
         link.setAttribute('aria-disabled', 'false');
+    });
+});
+
+// Friendly AI-like chatbot: polite, helpful, and concise canned responses
+document.addEventListener('DOMContentLoaded', function () {
+    const chatbot = document.getElementById('chatbot');
+    if (!chatbot) return;
+
+    const toggle = document.getElementById('chatbot-toggle');
+    const chatWindow = document.getElementById('chat-window');
+    const messages = document.getElementById('chat-messages');
+    const input = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('send-btn');
+
+    // Accessibility: ensure messages container is announced
+    if (messages) messages.setAttribute('aria-live', 'polite');
+
+    const openChat = () => {
+        chatbot.classList.add('chatbot--open');
+        if (chatWindow) {
+            chatWindow.style.display = 'flex';
+            chatWindow.setAttribute('aria-hidden', 'false');
+        }
+        input?.focus();
+    };
+
+    const renderMessageContent = (text) => {
+        // Convert simple filename hints into links and preserve plain text otherwise
+        const wrapper = document.createElement('div');
+        // light parsing for page hints like "donate.html" -> anchor
+        const parts = text.split(/(\b[a-zA-Z0-9_-]+\.html\b)/g);
+        parts.forEach((part) => {
+            if (/\b[a-zA-Z0-9_-]+\.html\b/.test(part)) {
+                const a = document.createElement('a');
+                a.href = part;
+                a.textContent = part.replace('.html', '').replace(/[-_]/g, ' ').replace(/(^.|\s.)/g, s => s.toUpperCase());
+                a.target = '_blank';
+                a.rel = 'noopener noreferrer';
+                a.style.color = 'var(--primary)';
+                a.style.textDecoration = 'underline';
+                wrapper.appendChild(a);
+            } else {
+                wrapper.appendChild(document.createTextNode(part));
+            }
+        });
+        return wrapper;
+    };
+
+    const appendMessage = (who, text) => {
+        if (!messages) return;
+        const el = document.createElement('div');
+        el.className = who === 'user' ? 'user-message' : 'bot-message';
+        el.setAttribute('role', 'article');
+        const content = renderMessageContent(text);
+        el.appendChild(content);
+        messages.appendChild(el);
+        messages.scrollTop = messages.scrollHeight + 200;
+    };
+
+    const appendBotMessage = (text, suggestions) => {
+        // slight delay to feel conversational
+        const typing = document.createElement('div');
+        typing.className = 'bot-message typing';
+        typing.textContent = 'Typing…';
+        messages.appendChild(typing);
+        messages.scrollTop = messages.scrollHeight + 200;
+        setTimeout(() => {
+            typing.remove();
+            appendMessage('bot', text);
+            if (Array.isArray(suggestions) && suggestions.length) appendSuggestions(suggestions);
+        }, 500 + Math.min(1000, text.length * 12));
+    };
+
+    const appendSuggestions = (items) => {
+        if (!messages) return;
+        const wrap = document.createElement('div');
+        wrap.className = 'chat-suggestions';
+        items.forEach((it) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'chat-suggestion';
+            btn.textContent = it;
+            btn.addEventListener('click', () => {
+                handleUser(it);
+            });
+            wrap.appendChild(btn);
+        });
+        messages.appendChild(wrap);
+        messages.scrollTop = messages.scrollHeight + 200;
+    };
+
+    const keywordReply = (text) => {
+        const t = (text || '').toLowerCase().trim();
+        // greetings and short responses
+        if (/^(hi|hello|hey|hiya|yo|good morning|good afternoon|good evening|i)$/i.test(t) || t.length <= 2 && /^[a-z]$/i.test(t)) {
+            return { text: `Hi there! I'm the DayTime Hub helper — I'm here to be helpful and kind. How can I assist you today?`, suggestions: ['Opening hours', 'Donate', 'Volunteer', 'Contact'] };
+        }
+        // exact-ish patterns and helpful suggestions
+        if (/\b(open|hours|when)\b/.test(t)) return { text: `We're open on Monday, Wednesday and Friday from 10:00–12:00. You're always welcome to drop by — would you like a map or directions?`, suggestions: ['Get directions', 'Contact'] };
+        if (/\b(donate|donation|give)\b/.test(t)) return { text: `Thank you — donations make a real difference to our work. You can give via the Donate page (donate.html) or contact us to arrange a gift. Would you like the Donate page?`, suggestions: ['Open Donate page', 'How donations are used'] };
+        if (/\b(volunt|volunteer|help out)\b/.test(t)) return { text: `That's wonderful — we welcome volunteers. See the Volunteer page for roles and the application form (volunteer.html). Would you like to view it?`, suggestions: ['Open Volunteer page'] };
+        if (/\b(contact|phone|email|reach)\b/.test(t)) return { text: `You can call 01474 328249 or email communitycentremanager@gmail.com. I can open the Contact page for you.`, suggestions: ['Open Contact page'] };
+        if (/\b(address|where|location|map)\b/.test(t)) return { text: `We are at 4 Wilfred Street, Gravesend, DA12 2HA. Here's a Google Maps link: https://maps.google.com?q=4+Wilfred+Street+Gravesend`, suggestions: ['Open Maps', 'Get directions'] };
+        if (/\b(service|services|help|support)\b/.test(t)) return { text: `We offer breakfast, showers, laundry, advice and partner support. Tell me which service you're interested in and I can give more detail.`, suggestions: ['Breakfast', 'Showers', 'Advice'] };
+        if (/\b(gallery|photos)\b/.test(t)) return { text: `See photos on the Gallery page (gallery.html) to get a feel for our activities.`, suggestions: ['Open Gallery page'] };
+        if (/\b(apply|application)\b/.test(t)) return { text: `Do you mean applying to volunteer, or applying for support? I can point you to the right page.`, suggestions: ['Volunteer', 'Support'] };
+        if (/\b(thank|thanks|cheers)\b/.test(t)) return { text: `You're very welcome — happy to help!` };
+        return null;
+    };
+
+    const handleUser = (raw) => {
+        const text = (raw || '').trim();
+        if (!text) {
+            appendBotMessage("No worries — when you're ready, type a short question. I'm friendly and happy to help!");
+            return;
+        }
+        // append user message and clear input
+        appendMessage('user', text);
+        if (input) { input.value = ''; input.focus(); }
+
+        const quick = keywordReply(text);
+        if (quick) {
+            // quick may be object with text and suggestions
+            if (typeof quick === 'string') appendBotMessage(quick);
+            else appendBotMessage(quick.text, quick.suggestions || []);
+            return;
+        }
+
+        // If nothing matched, respond helpfully and offer choices
+        appendBotMessage("That's a great question — I can help. Could you tell me whether you mean Opening hours, Donate, Volunteer or Contact?", ['Opening hours', 'Donate', 'Volunteer', 'Contact']);
+    };
+
+    // Toggle open/close on button click / keyboard
+    const closeChat = () => {
+        chatbot.classList.remove('chatbot--open');
+        if (chatWindow) {
+            chatWindow.style.display = 'none';
+            chatWindow.setAttribute('aria-hidden', 'true');
+        }
+        if (input) input.blur();
+        // clear messages so chat is refreshed next open
+        if (messages) messages.innerHTML = '';
+    };
+
+    const toggleChat = () => {
+        const isOpen = chatbot.classList.contains('chatbot--open');
+        if (isOpen) closeChat(); else openChat();
+    };
+
+    if (toggle) {
+        toggle.addEventListener('click', (e) => { e.preventDefault(); toggleChat(); });
+        toggle.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleChat(); } });
+    }
+
+    if (sendBtn) sendBtn.addEventListener('click', () => handleUser(input?.value));
+    if (input) input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleUser(input.value);
+        }
     });
 });
 const slides = document.querySelectorAll(".hero-slider img");

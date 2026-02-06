@@ -300,10 +300,21 @@
             </div>
             <div class="about-video-card">
                 <figure class="video-figure">
-                    <video controls preload="metadata" poster="img/Gravesend daytime logo Facebook">
-                        <source src="img/About DTH VID.mp4" type="video/mp4" />
-                        Your browser does not support the video tag.
-                    </video>
+                    <div class="video-hero-container">
+                        <div class="video-overlay" aria-hidden="true">
+                            <button class="video-play-button" type="button" aria-label="Play video">
+                                <svg width="48" height="48" viewBox="0 0 24 24" aria-hidden="true" focusable="false"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4 2v20l18-10L4 2z" fill="currentColor" />
+                                </svg>
+                            </button>
+                        </div>
+                        <video class="about-video-player" controls preload="metadata"
+                            poster="img/Gravesend daytime logo Facebook" playsinline webkit-playsinline>
+                            <source src="img/About DTH VID.mp4" type="video/mp4" />
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
                     <figcaption class="video-caption">DayTime Hub in action.</figcaption>
                 </figure>
             </div>

@@ -784,6 +784,100 @@ body {
     max-width: 720px;
 }
 
+/* Responsive, dynamic video styles for About page */
+.video-hero-container {
+    width: 100%;
+    max-width: 980px;
+    margin: 0 auto;
+    aspect-ratio: 16 / 9;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 18px 40px rgba(10, 20, 30, 0.14);
+    transition: transform 220ms ease, box-shadow 220ms ease;
+}
+
+.video-hero-container:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 28px 54px rgba(10, 20, 30, 0.18);
+}
+
+.video-hero-container video.about-video-player {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    background: #000;
+}
+
+.video-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.32), rgba(0, 0, 0, 0.18));
+    z-index: 4;
+    transition: opacity 220ms ease, visibility 220ms ease;
+}
+
+.video-play-button {
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    width: 84px;
+    height: 84px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    cursor: pointer;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28);
+    transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+.video-play-button svg {
+    width: 36px;
+    height: 36px;
+    color: #007b7b;
+}
+
+.video-play-button:focus,
+.video-play-button:hover {
+    transform: scale(1.04);
+    box-shadow: 0 12px 38px rgba(0, 0, 0, 0.32);
+}
+
+.video-hero-container.video-playing .video-overlay {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.video-caption {
+    text-align: center;
+    margin-top: 0.75rem;
+    color: var(--light-text);
+    font-size: 0.95rem;
+}
+
+@media (max-width: 900px) {
+    .video-hero-container {
+        max-width: 100%;
+        aspect-ratio: 16/9;
+        border-radius: 10px;
+    }
+
+    .video-play-button {
+        width: 68px;
+        height: 68px;
+    }
+
+    .video-play-button svg {
+        width: 30px;
+        height: 30px;
+    }
+}
+
 /* Events / calendar section */
 .events {
     padding: 3.5rem 0 2rem;
@@ -2182,6 +2276,136 @@ body {
     gap: 1rem;
 }
 
+/* Ensure stats cards are equal height and images align to the same baseline */
+.stats-grid .card {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    flex: 1 1 260px;
+    min-width: 220px;
+}
+
+/* Push image area to the bottom so cards align */
+.stats-grid .card-image,
+.stats-grid .card-image-grid {
+    margin-top: auto;
+}
+
+/* Make the 2x2 image grid consistent */
+.card-image-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    width: 100%;
+}
+
+/* Stacked images: evenly split the image area */
+.card-image .stacked {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    gap: 0.5rem;
+}
+
+/* Ensure images fill their tiles and keep consistent cropping */
+.card-image img,
+.card-image-grid img,
+.card-image .stacked img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 8px;
+}
+
+/* Donate page: trust / impact feature */
+.donate-trust {
+    margin-top: 2.5rem;
+    padding-bottom: 1rem;
+}
+
+.donate-trust-grid {
+    display: grid;
+    grid-template-columns: 1fr 440px;
+    gap: 2rem;
+    align-items: center;
+}
+
+.donate-trust-text h2 {
+    color: var(--primary);
+    margin-top: 0;
+}
+
+.donate-trust .trust-item {
+    margin-top: 1rem;
+}
+
+.donate-trust .trust-icon {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+    margin-right: 0.5rem;
+}
+
+.donate-trust .trust-item h3 {
+    display: inline-block;
+    margin: 0 0 0.35rem 0;
+    font-size: 1rem;
+}
+
+.donate-trust-image img {
+    width: 100%;
+    border-radius: 12px;
+    box-shadow: var(--glass-shadow);
+}
+
+.donate-trust-image-link {
+    display: inline-block;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.donate-trust-image-link:focus {
+    outline: 3px solid rgba(0, 139, 139, 0.12);
+    outline-offset: 4px;
+}
+
+.donate-trust-image-link:hover {
+    transform: translateY(-6px);
+}
+
+@media (max-width: 900px) {
+    .donate-trust-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .donate-trust-image {
+        order: -1;
+    }
+
+    /* Center donate trust content on small screens */
+    .donate-trust-text {
+        text-align: center;
+    }
+
+    .donate-trust .trust-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .donate-trust .trust-icon {
+        margin: 0 0 0.5rem 0;
+    }
+
+    .donate-trust-image img {
+        max-width: 86%;
+        margin: 0 auto;
+    }
+}
+
 .card-meta {
     margin-top: 0.35rem;
     font-size: 0.85rem;
@@ -3364,6 +3588,31 @@ ul {
     transform: translateY(-2px);
 }
 
+/* When a social label appears inside a light event card, make it visible
+   - dark text, subtle background removed, compact spacing */
+.event-card .social-link--label {
+    background: transparent;
+    color: var(--primary);
+    padding: 0.15rem 0.4rem;
+    border-radius: 6px;
+    box-shadow: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.event-card .social-link--label svg {
+    width: 16px;
+    height: 16px;
+    color: inherit;
+}
+
+.event-card .social-link--label:hover,
+.event-card .social-link--label:focus {
+    color: var(--primary);
+    text-decoration: underline;
+}
+
 .site-footer h3 {
     margin: 0 0 1rem;
     font-size: 1.1rem;
@@ -3901,13 +4150,52 @@ ul {
 }
 
 .user-message,
-.user-message,
 .bot-message {
     margin-bottom: 8px;
-    padding: 6px 8px;
-    border-radius: 6px;
-    max-width: 80%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    max-width: 86%;
     word-wrap: break-word;
+}
+
+.user-message {
+    align-self: flex-end;
+    background: linear-gradient(135deg, rgba(46, 125, 50, 0.95), rgba(30, 110, 80, 0.95));
+    color: var(--white);
+}
+
+.bot-message {
+    align-self: flex-start;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 248, 248, 0.96));
+    color: var(--text);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.bot-message.typing {
+    opacity: 0.7;
+    font-style: italic;
+}
+
+.chat-suggestions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 8px 6px;
+}
+
+.chat-suggestion {
+    background: transparent;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    padding: 6px 10px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 0.95rem;
+}
+
+.chat-suggestion:hover,
+.chat-suggestion:focus {
+    background: rgba(0, 0, 0, 0.03);
+    outline: none;
 }
 
 .user-message {
@@ -4800,4 +5088,36 @@ ul {
         padding-top: 1rem;
         padding-bottom: 1rem;
     }
+}
+
+/* Footer: large visual gap before the church link so it doesn't appear tied to the creator */
+.site-last-updated .footer-church-link {
+    display: inline-block;
+    margin-left: 7rem;
+    /* adjust value if you want even more/less space */
+}
+
+/* Make partner links look like neutral text while remaining clickable */
+.partners-list a {
+    color: var(--light-text);
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-block;
+    margin-right: 1.5rem;
+}
+
+.partners-list a:visited {
+    color: var(--light-text);
+}
+
+.partners-list a:hover,
+.partners-list a:focus {
+    color: var(--primary);
+    text-decoration: underline;
+}
+
+.partners-list a:focus {
+    outline: 3px solid rgba(0, 139, 139, 0.12);
+    outline-offset: 3px;
 }
