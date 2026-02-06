@@ -5188,7 +5188,7 @@ ul {
 }
 
 .dth-splash__logo {
-    width: 220px;
+    width: 110px;
     height: auto;
     display: block;
     object-fit: contain;
@@ -5245,43 +5245,119 @@ body.splash-visible {
     }
 }
 
-/* Logo size overrides for clearer display on high-DPI / data-save views */
-.logo-img {
-    width: 180px !important;
-    height: auto !important;
-    margin-right: 16px !important;
+/* Splash progress bar */
+.dth-splash__progress {
+    width: 140px;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.06);
+    border-radius: 8px;
+    overflow: hidden;
 }
 
-.footer-logo-icon {
-    width: 120px;
-    height: auto;
-    display: inline-block;
+.dth-splash__progress-fill {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), #FFD54F);
+    border-radius: 8px;
+    transform-origin: left center;
+    will-change: width;
+    animation-name: dth-fill;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+    /* duration set dynamically via inline style or CSS variable */
+    animation-duration: var(--splash-duration, 2000ms);
 }
 
-@media (max-width: 680px) {
-    .logo-img {
-        width: 120px !important;
+@keyframes dth-fill {
+    from {
+        width: 0%;
+    }
+
+    to {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dth-splash__progress-fill {
+        animation: none;
+        width: 100%;
+    }
+}
+
+/* Mobile-specific splash and cookie adjustments */
+@media (max-width: 600px) {
+    #dth-splash {
+        padding-top: env(safe-area-inset-top, 12px);
+        padding-bottom: env(safe-area-inset-bottom, 12px);
+    }
+
+    #dth-splash .dth-splash__inner {
+        gap: 12px;
+        transform: translateY(-6%);
     }
 
     .dth-splash__logo {
-        width: 160px;
+        width: 88px;
     }
 
-    .footer-logo-icon {
-        width: 80px;
-    }
-}
-
-@media (max-width: 680px) {
-    .logo-img {
-        width: 76px !important;
-    }
-
-    .dth-splash__logo {
+    .dth-splash__progress {
         width: 120px;
+        height: 6px;
     }
 
-    .footer-logo-icon {
-        width: 56px;
+    .dth-splash__progress-fill {
+        border-radius: 6px;
+    }
+
+    /* Make sure splash covers any notch/indicator areas and stays tappable */
+    #dth-splash {
+        touch-action: manipulation;
+    }
+
+    /* Cookie banner: move to bottom, full width with safe-area padding */
+    .cookie-banner {
+        right: auto;
+        left: 50%;
+        transform: translateX(-50%);
+        top: auto;
+        bottom: calc(12px + env(safe-area-inset-bottom, 12px));
+        width: calc(100% - 28px);
+        max-width: none;
+        border-radius: 14px;
+        padding: 0.95rem 1rem;
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+    }
+
+    .cookie-banner__content {
+        gap: 0.6rem;
+    }
+
+    .cookie-banner__title {
+        font-size: 1.05rem;
+    }
+
+    .cookie-banner__actions {
+        margin-left: 0;
+    }
+
+    .cookie-banner__btn {
+        padding: 0.6rem 0.9rem;
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 420px) {
+    .dth-splash__logo {
+        width: 72px;
+    }
+
+    .dth-splash__progress {
+        width: 100px;
+        height: 6px;
+    }
+
+    #dth-splash .dth-splash__inner {
+        gap: 10px;
     }
 }

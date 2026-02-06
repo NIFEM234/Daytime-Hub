@@ -634,6 +634,12 @@ if (slides.length) {
         const splash = document.getElementById('dth-splash');
         if (!splash) return;
 
+        // duration in ms for the fake loading progress (tweak as desired)
+        const splashDuration = 2000;
+
+        // expose duration to CSS via variable so the progress-fill animation matches
+        try { splash.style.setProperty('--splash-duration', splashDuration + 'ms'); } catch (e) { }
+
         let removed = false;
 
         const doHide = () => {
@@ -642,21 +648,51 @@ if (slides.length) {
             splash.classList.add('splash-hidden');
             // restore scrolling
             document.body.classList.remove('splash-visible');
+            // notify other code that the splash has been hidden
+            try { window.dispatchEvent(new Event('dth-splash-hidden')); } catch (e) { }
             setTimeout(() => {
                 try { splash.remove(); } catch (e) { /* ignore */ }
-                try { document.dispatchEvent(new Event('dth:splashHidden')); } catch (e) { }
             }, 420);
         };
 
-        // Hide when resources finished loading
+        // Start progress animation and hide when it completes.
+        const progressFill = splash.querySelector('.dth-splash__progress-fill');
+        const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        if (progressFill && !prefersReduced) {
+            // update aria-valuenow during the animation for screen readers
+            const start = performance.now();
+            const step = (now) => {
+                const elapsed = Math.min(now - start, splashDuration);
+                const pct = Math.round((elapsed / splashDuration) * 100);
+                progressFill.setAttribute('aria-valuenow', String(pct));
+                if (elapsed < splashDuration && !removed) {
+                    requestAnimationFrame(step);
+                }
+            };
+            requestAnimationFrame(step);
+
+            // listen for animation end on the fill element
+            progressFill.addEventListener('animationend', () => {
+                try { progressFill.setAttribute('aria-valuenow', '100'); } catch (e) { }
+                doHide();
+            }, { once: true });
+        } else {
+            // Reduced motion: just wait the duration then hide
+            setTimeout(doHide, splashDuration);
+        }
+
+        // Also hide when resources finished loading (short delay after load)
         window.addEventListener('load', () => {
-            setTimeout(doHide, 160);
+            setTimeout(() => {
+                // ensure we only hide after at least the splashDuration has completed
+                // if the progress animation is still running, doHide will be called by animationend
+                if (!removed) doHide();
+            }, 160);
         }, { once: true });
 
-        // Fallback: ensure splash doesn't hang longer than 3s
-        setTimeout(() => {
-            doHide();
-        }, 3000);
+        // Fallback: ensure splash doesn't hang longer than 5s
+        setTimeout(() => { doHide(); }, Math.max(3000, splashDuration + 500));
 
         // Accessibility: allow hiding with touch or click (small devices)
         splash.addEventListener('click', doHide);
@@ -1272,78 +1308,82 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initCookieBanner() {
+    // Only show the cookie banner on the homepage
+    if (!document.body.classList.contains('home')) return;
+
     const consentKey = 'cookieConsent';
     const sessionKey = 'cookieBannerDismissed';
     if (sessionStorage.getItem(sessionKey)) return;
 
-    const banner = document.createElement('div');
-    banner.className = 'cookie-banner cookie-banner--side';
-    banner.setAttribute('role', 'dialog');
-    banner.setAttribute('aria-live', 'polite');
-    banner.setAttribute('aria-label', 'Cookie consent');
+    const showBanner = () => {
+        // If dismiss recorded while waiting, abort
+        if (sessionStorage.getItem(sessionKey)) return;
 
-    banner.innerHTML = `
-        <div class="cookie-banner__glow" aria-hidden="true"></div>
-        <button class="cookie-banner__close" type="button" aria-label="Close cookie notice" data-consent="dismiss">×</button>
-        <div class="cookie-banner__content">
-            <span class="cookie-banner__eyebrow">Consent Patch</span>
-            <h2 class="cookie-banner__title">Cookies &amp; Care</h2>
-            <p>We use cookies to improve your experience. You can accept or decline non-essential cookies. Read our <a href="privacy.html">Privacy Policy</a>.</p>
-            <div class="cookie-banner__actions" role="group" aria-label="Cookie choices">
-                <button class="btn cookie-banner__btn" data-consent="accept" type="button">Accept</button>
-                <button class="btn secondary cookie-banner__btn" data-consent="decline" type="button">Decline</button>
+        const banner = document.createElement('div');
+        banner.className = 'cookie-banner cookie-banner--side';
+        banner.setAttribute('role', 'dialog');
+        banner.setAttribute('aria-live', 'polite');
+        banner.setAttribute('aria-label', 'Cookie consent');
+
+        banner.innerHTML = `
+            <div class="cookie-banner__glow" aria-hidden="true"></div>
+            <button class="cookie-banner__close" type="button" aria-label="Close cookie notice" data-consent="dismiss">×</button>
+            <div class="cookie-banner__content">
+                <span class="cookie-banner__eyebrow">Consent Patch</span>
+                <h2 class="cookie-banner__title">Cookies &amp; Care</h2>
+                <p>We use cookies to improve your experience. You can accept or decline non-essential cookies. Read our <a href="privacy.html">Privacy Policy</a>.</p>
+                <div class="cookie-banner__actions" role="group" aria-label="Cookie choices">
+                    <button class="btn cookie-banner__btn" data-consent="accept" type="button">Accept</button>
+                    <button class="btn secondary cookie-banner__btn" data-consent="decline" type="button">Decline</button>
+                </div>
             </div>
-        </div>
-    `;
+        `;
 
-    const hideBanner = () => {
-        if (banner.classList.contains('cookie-banner--hide')) return;
-        banner.classList.add('cookie-banner--hide');
-        setTimeout(() => banner.remove(), 450);
+        const hideBanner = () => {
+            if (banner.classList.contains('cookie-banner--hide')) return;
+            banner.classList.add('cookie-banner--hide');
+            setTimeout(() => banner.remove(), 450);
+        };
+
+        const handleClick = (event) => {
+            const action = event.target.getAttribute('data-consent');
+            if (!action) return;
+
+            if (action === 'accept') {
+                localStorage.setItem(consentKey, 'accepted');
+            } else if (action === 'decline') {
+                localStorage.setItem(consentKey, 'declined');
+            } else {
+                localStorage.setItem(consentKey, 'dismissed');
+            }
+
+            sessionStorage.setItem(sessionKey, 'true');
+            hideBanner();
+        };
+
+        banner.addEventListener('click', handleClick);
+        document.body.appendChild(banner);
+
+        // Auto-hide after 10s and mark session dismissed
+        setTimeout(() => {
+            sessionStorage.setItem(sessionKey, 'true');
+            hideBanner();
+        }, 10000);
     };
 
-    const handleClick = (event) => {
-        const action = event.target.getAttribute('data-consent');
-        if (!action) return;
-
-        if (action === 'accept') {
-            localStorage.setItem(consentKey, 'accepted');
-        } else if (action === 'decline') {
-            localStorage.setItem(consentKey, 'declined');
-        } else {
-            localStorage.setItem(consentKey, 'dismissed');
-        }
-
-        sessionStorage.setItem(sessionKey, 'true');
-        hideBanner();
-    };
-
-    banner.addEventListener('click', handleClick);
-    document.body.appendChild(banner);
-
-    setTimeout(() => {
-        sessionStorage.setItem(sessionKey, 'true');
-        hideBanner();
-    }, 10000);
+    // If splash present, wait for splash to be hidden before showing cookie banner
+    const splash = document.getElementById('dth-splash');
+    if (splash) {
+        const onHidden = () => {
+            showBanner();
+        };
+        // If already hidden, show immediately
+        window.addEventListener('dth-splash-hidden', onHidden, { once: true });
+        // Fallback in case event not fired
+        setTimeout(() => { showBanner(); }, 3200);
+    } else {
+        showBanner();
+    }
 }
 
-// Initialize cookie banner only on the homepage and only after the splash is hidden
-document.addEventListener('DOMContentLoaded', () => {
-    const isIndex = window.location.pathname === '/' || window.location.pathname.endsWith('/index.html') || document.body.classList.contains('home');
-    if (!isIndex) return;
-
-    const splash = document.getElementById('dth-splash');
-    if (!splash) {
-        // no splash present — init immediately
-        initCookieBanner();
-        return;
-    }
-
-    // Wait for the splash to be hidden/removed
-    const onHidden = () => {
-        initCookieBanner();
-        document.removeEventListener('dth:splashHidden', onHidden);
-    };
-
-    document.addEventListener('dth:splashHidden', onHidden);
-});
+document.addEventListener('DOMContentLoaded', initCookieBanner);
