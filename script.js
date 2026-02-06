@@ -628,6 +628,43 @@ if (slides.length) {
     }, 4000);
 }
 
+/* Splash screen control: hide on window load or after timeout */
+(function () {
+    try {
+        const splash = document.getElementById('dth-splash');
+        if (!splash) return;
+
+        let removed = false;
+
+        const doHide = () => {
+            if (removed) return;
+            removed = true;
+            splash.classList.add('splash-hidden');
+            // restore scrolling
+            document.body.classList.remove('splash-visible');
+            setTimeout(() => {
+                try { splash.remove(); } catch (e) { /* ignore */ }
+            }, 420);
+        };
+
+        // Hide when resources finished loading
+        window.addEventListener('load', () => {
+            setTimeout(doHide, 160);
+        }, { once: true });
+
+        // Fallback: ensure splash doesn't hang longer than 3s
+        setTimeout(() => {
+            doHide();
+        }, 3000);
+
+        // Accessibility: allow hiding with touch or click (small devices)
+        splash.addEventListener('click', doHide);
+    } catch (e) {
+        // non-fatal
+        console.warn('Splash init error', e);
+    }
+})();
+
 // Chatbot functionality
 const chatbot = document.getElementById('chatbot');
 const chatbotToggle = document.getElementById('chatbot-toggle');

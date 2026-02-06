@@ -89,7 +89,14 @@
     <script defer src="script.js"></script>
 </head>
 
-<body class="home">
+<body class="home splash-visible">
+    <!-- Splash screen shown on app load (mobile-friendly) -->
+    <div id="dth-splash" aria-hidden="false" role="status">
+        <div class="dth-splash__inner">
+            <img src="img/Gravesend daytime logo Facebook" alt="DayTime Hub logo" class="dth-splash__logo">
+            <div class="dth-splash__spinner" aria-hidden="true"></div>
+        </div>
+    </div>
     <base href="/">
 
     <a class="skip-link" href="#main">Skip to content</a>
