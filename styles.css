@@ -2578,6 +2578,26 @@ body {
     }
 }
 
+/* Index page only: increase navbar height slightly on phones for more vertical space */
+@media (max-width: 600px) {
+    body.home {
+        /* increase the nav offset so page content starts lower */
+        --nav-height: 110px;
+    }
+
+    body.home .navbar {
+        /* increase navbar inner padding to make nav taller */
+        padding: 1.2rem 1.5rem;
+    }
+
+    /* Ensure logo sizing remains visually balanced inside taller navbar */
+    body.home .logo-img {
+        width: 48px;
+        height: 48px;
+        margin-right: 20px;
+    }
+}
+
 /* Community quotes */
 .community-quotes {
     background: #f1ecd8ec;
