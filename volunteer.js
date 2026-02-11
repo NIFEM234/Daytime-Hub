@@ -116,9 +116,20 @@ if (form) {
             return;
         }
 
+
         // Kitchen-specific check
         if (selectedRole?.toString().includes('Kitchen') && foodHygieneCertificate !== 'Yes') {
             setStatus('Kitchen roles require a Level 2 Food Hygiene Certificate.', 'error');
+            if (submitBtn) submitBtn.disabled = false;
+            return;
+        }
+
+        // Consent checkbox must be checked
+        const consentChecked = form.querySelector('input[name="consent"]:checked');
+        if (!consentChecked) {
+            setStatus('You must consent to data processing to submit this form.', 'error');
+            const el = form.querySelector('input[name="consent"]');
+            if (el && typeof el.focus === 'function') el.focus();
             if (submitBtn) submitBtn.disabled = false;
             return;
         }
