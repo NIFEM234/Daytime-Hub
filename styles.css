@@ -1,3 +1,297 @@
+/* Lightbox Gallery Styles */
+.gallery-lightbox {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    z-index: 99999;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.85);
+    flex-direction: column;
+    transition: opacity 0.3s;
+}
+
+.lightbox-img {
+    max-width: 90vw;
+    max-height: 80vh;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    margin-bottom: 1rem;
+}
+
+.lightbox-close {
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+    color: #fff;
+    font-size: 2.5rem;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.lightbox-prev,
+.lightbox-next {
+    position: absolute;
+    top: 50%;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.3);
+    border: none;
+    font-size: 2.5rem;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-radius: 50%;
+    z-index: 2;
+    user-select: none;
+    transform: translateY(-50%);
+}
+
+.lightbox-prev {
+    left: 2rem;
+}
+
+.lightbox-next {
+    right: 2rem;
+}
+
+@media (max-width: 600px) {
+    .lightbox-img {
+        max-width: 98vw;
+        max-height: 60vh;
+    }
+
+    .lightbox-prev,
+    .lightbox-next {
+        font-size: 2rem;
+        left: 0.5rem;
+        right: 0.5rem;
+    }
+
+    .lightbox-close {
+        top: 1rem;
+        right: 1rem;
+        font-size: 2rem;
+    }
+}
+
+/* Top right Food Hygiene logo in footer */
+.footer-hygiene-topright {
+    position: absolute;
+    top: 0.5rem;
+    right: -120px;
+    /* Move further right into empty space */
+    z-index: 2;
+    text-align: right;
+}
+
+.footer-hygiene-topright img {
+    max-width: 170px;
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+    background: #fff;
+}
+
+@media (max-width: 900px) {
+    .footer-hygiene-topright {
+        position: static;
+        margin: 1rem auto 0 auto;
+        text-align: center;
+        display: block;
+    }
+
+    .footer-hygiene-topright img {
+        max-width: 120px;
+    }
+}
+
+.footer-grid {
+    position: relative;
+}
+
+/* Food Hygiene Rating in Footer */
+.footer-hygiene-rating {
+    margin-top: 1.5rem;
+    text-align: right;
+}
+
+.footer-hygiene-rating img {
+    max-width: 170px;
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+    background: #fff;
+}
+
+@media (max-width: 700px) {
+    .footer-hygiene-rating {
+        text-align: center;
+        margin-top: 1rem;
+    }
+
+    .footer-hygiene-rating img {
+        max-width: 120px;
+    }
+}
+
+/* Feedback Popup Styles */
+#dth-feedback-popup {
+    position: fixed;
+    right: 1.5rem;
+    bottom: 7.5rem;
+    /* Increased to ensure more space above back-to-top button */
+    width: 340px;
+    min-height: 420px;
+    /* Increased height for more content */
+    max-height: 90vh;
+    max-width: 95vw;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+    z-index: 9999;
+    font-family: inherit;
+    transition: opacity 0.3s;
+    opacity: 1;
+    overflow-y: auto;
+}
+
+.dth-feedback-header {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1rem 0.5rem 1rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.dth-logo {
+    background: #e6f0ff;
+    color: #1976d2;
+    font-weight: bold;
+    font-size: 1.3rem;
+    border-radius: 50%;
+    width: 2.2rem;
+    height: 2.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.7rem;
+    flex-shrink: 0;
+}
+
+.dth-feedback-title {
+    flex: 1;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #222;
+}
+
+.dth-close-btn {
+    background: none;
+    border: none;
+    color: #1976d2;
+    font-size: 2rem;
+    cursor: pointer;
+    margin-left: 0.5rem;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.dth-close-btn:hover {
+    color: #0d47a1;
+}
+
+.dth-feedback-body {
+    padding: 1rem;
+}
+
+.dth-feedback-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.95rem;
+    color: #555;
+    margin-bottom: 1rem;
+}
+
+.dth-feedback-info div {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.dth-feedback-question {
+    font-size: 1.05rem;
+    margin-bottom: 0.7rem;
+    color: #222;
+}
+
+.dth-feedback-stars {
+    display: flex;
+    justify-content: center;
+    gap: 0.3rem;
+    font-size: 2rem;
+    margin-bottom: 0.3rem;
+    cursor: pointer;
+}
+
+.dth-feedback-stars span {
+    color: #e0e0e0;
+    transition: color 0.2s;
+}
+
+.dth-feedback-stars span.selected,
+.dth-feedback-stars span:hover,
+.dth-feedback-stars span:hover~span {
+    color: #1976d2;
+}
+
+.dth-feedback-scale {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: #888;
+    margin-bottom: 0.5rem;
+}
+
+.dth-powered {
+    text-align: center;
+    font-size: 0.85rem;
+    color: #b0b0b0;
+    margin-top: 0.5rem;
+}
+
+@media (max-width: 600px) {
+    #dth-feedback-popup {
+        right: 0.5rem;
+        left: 0.5rem;
+        width: auto;
+        bottom: 6.5rem;
+        /* More space above back-to-top button on mobile */
+        min-height: 320px;
+        max-height: 85vh;
+        max-width: 98vw;
+        font-size: 0.98rem;
+        overflow-y: auto;
+    }
+
+    .dth-feedback-header,
+    .dth-feedback-body {
+        padding: 0.7rem;
+    }
+
+    .dth-logo {
+        width: 1.7rem;
+        height: 1.7rem;
+        font-size: 1rem;
+    }
+
+    .dth-feedback-title {
+        font-size: 1rem;
+    }
+}
+
 /* About/Volunteer hero heading in light yellow */
 .about-hero-text h1 {
     color: #fff8cf;

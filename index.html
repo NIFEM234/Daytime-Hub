@@ -23,7 +23,11 @@
     <meta name="twitter:image" content="/img/Community Gathering 02 cut.png">
     <link rel="canonical" href="https://www.daytimehub.org/">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32">
+    <link rel="icon" href="/favicon-192.png" type="image/png" sizes="192x192">
     <link rel="apple-touch-icon" href="/apple-touch-icon.svg">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
     <link rel="manifest" href="/site.webmanifest">
     <script type="application/ld+json">
 
@@ -637,6 +641,12 @@
                     </li>
                 </ul>
             </div>
+            <div class="footer-hygiene-rating footer-hygiene-topright">
+                <a href="https://ratings.food.gov.uk/business/1489114/daytime-hub-gravesend" target="_blank"
+                    rel="noopener noreferrer" aria-label="View official Food Hygiene Rating">
+                    <img src="img/Food Hygiene Rating .png" alt="Food Hygiene Rating: 5 - Very Good" />
+                </a>
+            </div>
         </div>
         <div class="footer-bottom">
             <div class="page footer-bottom-inner">
@@ -678,6 +688,86 @@
         </div>
     </div>
 
+    <!-- Feedback Popup -->
+    <div id="dth-feedback-popup" style="display:none;">
+        <div class="dth-feedback-header">
+            <div class="dth-logo">DTH</div>
+            <span class="dth-feedback-title">Your feedback makes us better. Thanks!</span>
+            <button class="dth-close-btn" aria-label="Close">&times;</button>
+        </div>
+        <div class="dth-feedback-body">
+            <div class="dth-feedback-info">
+                <div><span>❓</span> 4 questions</div>
+                <div><span>⏰</span> Duration 2 mins</div>
+                <div><span>🔒</span> 100% anonymous</div>
+            </div>
+            <div class="dth-feedback-question">
+                Did you find the information you were looking for?
+            </div>
+            <div class="dth-feedback-stars">
+                <span data-value="1">&#9733;</span>
+                <span data-value="2">&#9733;</span>
+                <span data-value="3">&#9733;</span>
+                <span data-value="4">&#9733;</span>
+                <span data-value="5">&#9733;</span>
+            </div>
+            <div class="dth-feedback-scale">
+                <span>Not at all</span>
+                <span>Definitely</span>
+            </div>
+            <div class="dth-powered">Powered by DayTime Hub</div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            let popup, closeBtn, stars, popupTimeout, autoHideTimeout;
+            const POPUP_DELAY = 60000; // 1 minute
+            const AUTOHIDE_DELAY = 15000; // 15 seconds after showing
+
+            function showPopup() {
+                popup = document.getElementById('dth-feedback-popup');
+                if (!popup) return;
+                popup.style.display = 'block';
+                popup.style.opacity = '1';
+                autoHideTimeout = setTimeout(hidePopup, AUTOHIDE_DELAY);
+                popup.addEventListener('wheel', e => e.stopPropagation());
+            }
+
+            function hidePopup() {
+                if (popup) {
+                    popup.style.opacity = '0';
+                    setTimeout(() => { popup.style.display = 'none'; }, 300);
+                }
+                clearTimeout(autoHideTimeout);
+            }
+
+            function onStarClick(e) {
+                stars.forEach(star => star.classList.remove('selected'));
+                let val = parseInt(e.target.getAttribute('data-value'));
+                for (let i = 0; i < val; i++) {
+                    stars[i].classList.add('selected');
+                }
+                setTimeout(hidePopup, 800);
+            }
+
+            function initPopup() {
+                popup = document.getElementById('dth-feedback-popup');
+                if (!popup) return;
+                closeBtn = popup.querySelector('.dth-close-btn');
+                stars = Array.from(popup.querySelectorAll('.dth-feedback-stars span'));
+                closeBtn.addEventListener('click', hidePopup);
+                stars.forEach(star => {
+                    star.addEventListener('click', onStarClick);
+                });
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                initPopup();
+                popupTimeout = setTimeout(showPopup, POPUP_DELAY);
+            });
+        })();
+    </script>
 </body>
 
 </html>
