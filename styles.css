@@ -5675,3 +5675,39 @@ body.splash-visible {
         gap: 10px;
     }
 }
+/* Hide manual slide controls on mobile */
+@media (max-width: 768px) {
+    .slide-controls, .arrow, .manual-controls, .lightbox-prev, .lightbox-next {
+        display: none !important;
+    }
+}
+
+/* Optimize rating system layout for all devices */
+.rating-system {
+    padding: 1.5rem;
+    margin: 1rem 0;
+    font-size: 1.1rem;
+    background: #f9f9f9;
+    border-radius: 8px;
+    max-width: 400px;
+}
+
+.rating-system label,
+.rating-system input,
+.rating-system span {
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .rating-system {
+        padding: 1rem;
+        font-size: 1rem;
+        max-width: 95vw;
+    }
+    .rating-system label,
+    .rating-system input,
+    .rating-system span {
+        margin-bottom: 0.75rem;
+    }
+}
