@@ -5675,9 +5675,15 @@ body.splash-visible {
         gap: 10px;
     }
 }
+
 /* Hide manual slide controls on mobile */
 @media (max-width: 768px) {
-    .slide-controls, .arrow, .manual-controls, .lightbox-prev, .lightbox-next {
+
+    .slide-controls,
+    .arrow,
+    .manual-controls,
+    .lightbox-prev,
+    .lightbox-next {
         display: none !important;
     }
 }
@@ -5705,6 +5711,7 @@ body.splash-visible {
         font-size: 1rem;
         max-width: 95vw;
     }
+
     .rating-system label,
     .rating-system input,
     .rating-system span {
