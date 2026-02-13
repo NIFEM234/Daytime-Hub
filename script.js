@@ -1493,11 +1493,11 @@ function initCookieBanner() {
         banner.addEventListener('click', handleClick);
         document.body.appendChild(banner);
 
-        // Auto-hide after 10s and mark session dismissed
+        // Auto-hide after 20s and mark session dismissed
         setTimeout(() => {
             sessionStorage.setItem(sessionKey, 'true');
             hideBanner();
-        }, 10000);
+        }, 20000);
     };
 
     // If splash present, wait for splash to be hidden before showing cookie banner
