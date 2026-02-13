@@ -1,3 +1,132 @@
+// --- Valentine Theme: Floating Hearts & Chatbot Card ---
+function spawnValentineHearts() {
+    const colors = ['#ffb6c1', '#ff69b4', '#ff4f81', '#ff8da1'];
+    for (let i = 0; i < 12; i++) {
+        setTimeout(() => {
+            const heart = document.createElement('div');
+            heart.className = 'valentine-heart';
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.top = (80 + Math.random() * 10) + 'vh';
+            heart.style.background = colors[Math.floor(Math.random() * colors.length)];
+            heart.style.opacity = 0;
+            document.body.appendChild(heart);
+            setTimeout(() => { heart.style.opacity = 1; }, 50);
+            setTimeout(() => { heart.remove(); }, 6000);
+        }, i * 400);
+    }
+}
+
+function createValentineChatbotBtn() {
+    if (document.querySelector('.valentine-chatbot-btn')) return;
+    const btn = document.createElement('button');
+    btn.className = 'valentine-chatbot-btn';
+    btn.innerHTML = '<span class="heart"></span> Valentine Card';
+    btn.title = "Send a Valentine!";
+    btn.onclick = function () {
+        showValentineCard();
+    };
+    document.body.appendChild(btn);
+}
+
+function showValentineCard() {
+    if (document.getElementById('valentine-card-modal')) return;
+
+    // Valentine messages
+    const messages = [
+        {
+            title: "Happy Valentine's Day!",
+            text: "You are loved and appreciated.<br>Wishing you a day filled with kindness and joy! 💖"
+        },
+        {
+            title: "You Are Someone's Valentine!",
+            text: "Sending you hugs, smiles, and a little bit of magic today! 🧸✨"
+        },
+        {
+            title: "Spread the Love!",
+            text: "May your day be filled with sweet surprises and warm hearts! 🍬💝"
+        },
+        {
+            title: "You Make the World Brighter!",
+            text: "Thank you for being you. Have a wonderful Valentine’s Day! 🌷😊"
+        },
+        {
+            title: "A Little Love for You!",
+            text: "Hope your day is as lovely as you are! 💌🌸"
+        },
+        {
+            title: "You’re a Gem!",
+            text: "Wishing you sparkles, laughter, and lots of love! 💎💕"
+        }
+    ];
+
+    // Cute Valentine art (static or animated)
+    const arts = [
+        // Bunny GIF
+        {
+            src: "https://media.giphy.com/media/3oriO0OEd9QIDdllqo/giphy.gif",
+            alt: "Animated Bunny Valentine",
+            style: "width:90px;margin-bottom:16px;"
+        },
+        // Cute animated heart
+        {
+            src: "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif",
+            alt: "Animated Heart",
+            style: "width:80px;margin-bottom:16px;"
+        },
+        // Cute animated bunny (reliable GIF)
+        {
+            src: "https://media.giphy.com/media/3oriO0OEd9QIDdllqo/giphy.gif",
+            alt: "Cute Bunny Valentine",
+            style: "width:80px;margin-bottom:16px;"
+        },
+        // Cute bear
+        {
+            src: "https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif",
+            alt: "Cute Bear Valentine",
+            style: "width:80px;margin-bottom:16px;"
+        },
+        // Cute animated cat
+        {
+            src: "https://media.giphy.com/media/MDJ9IbxxvDUQM/giphy.gif",
+            alt: "Cute Cat Valentine",
+            style: "width:80px;margin-bottom:16px;"
+        }
+    ];
+
+    // Pick a random message and art
+    const msg = messages[Math.floor(Math.random() * messages.length)];
+    const art = arts[Math.floor(Math.random() * arts.length)];
+
+    const modal = document.createElement('div');
+    modal.id = 'valentine-card-modal';
+    modal.style.position = 'fixed';
+    modal.style.left = '0';
+    modal.style.top = '0';
+    modal.style.width = '100vw';
+    modal.style.height = '100vh';
+    modal.style.background = 'rgba(255,192,203,0.25)';
+    modal.style.zIndex = '10001';
+    modal.style.display = 'flex';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+    modal.innerHTML = `
+        <div style="background: #fff0f6; border-radius: 24px; box-shadow: 0 8px 32px rgba(255,0,80,0.15); padding: 32px 40px; max-width: 90vw; max-height: 80vh; text-align: center; position: relative;">
+            <button style="position:absolute;top:12px;right:12px;background:none;border:none;font-size:2rem;color:#ff69b4;cursor:pointer;" onclick="document.getElementById('valentine-card-modal').remove()">&times;</button>
+            <h2 style=\"color:#ff69b4;font-family:cursive;margin-bottom:12px;\">${msg.title}</h2>
+            <p style=\"font-size:1.2rem;color:#d72660;margin-bottom:18px;\">${msg.text}</p>
+            <img src=\"${art.src}\" alt=\"${art.alt}\" style=\"${art.style}\">
+            <div style=\"margin-top:18px;\">
+                <button onclick=\"document.getElementById('valentine-card-modal').remove()\" style=\"background:#ff69b4;color:#fff;border:none;padding:10px 24px;border-radius:12px;font-size:1rem;cursor:pointer;\">Close</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    spawnValentineHearts();
+    createValentineChatbotBtn();
+});
 // Google Analytics (GA4) loader: reads `meta[name="ga-measurement-id"]` and injects gtag if present
 (function loadGAFromMeta() {
     try {
