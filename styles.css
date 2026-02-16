@@ -6,113 +6,15 @@
     z-index: 1;
 }
 
-.valentine-gallery-heart {
-    position: absolute;
-    z-index: 2;
-    pointer-events: none;
-    opacity: 0.18;
-    animation: galleryHeartFloat 12s linear infinite;
-}
-
-.valentine-gallery-heart.heart1 {
-    top: 40px;
-    left: 60px;
-    width: 60px;
-    animation-delay: 0s;
-}
-
-.valentine-gallery-heart.heart2 {
-    top: 120px;
-    right: 80px;
-    width: 44px;
-    animation-delay: 2s;
-}
-
-.valentine-gallery-heart.heart3 {
-    bottom: 60px;
-    left: 120px;
-    width: 52px;
-    animation-delay: 4s;
-}
-
-.valentine-gallery-heart.heart4 {
-    bottom: 40px;
-    right: 60px;
-    width: 70px;
-    animation-delay: 6s;
-}
-
-@keyframes galleryHeartFloat {
-    0% {
-        transform: translateY(0) scale(1);
-    }
-
-    50% {
-        transform: translateY(-18px) scale(1.08);
-    }
-
-    100% {
-        transform: translateY(0) scale(1);
-    }
-}
-
-/* Valentine border for gallery images */
-.gallery-img,
-.gallery-image,
-.gallery-photo,
-.gallery-anim,
-.gallery-grid img {
-    border: 3px solid #ffb6c1 !important;
-    border-radius: 18px !important;
-    box-shadow: 0 2px 12px #ffb6c133;
-    transition: box-shadow 0.2s, border-color 0.2s;
-}
-
-.gallery-img:hover,
-.gallery-image:hover,
-.gallery-photo:hover,
-.gallery-anim:hover,
-.gallery-grid img:hover {
-    border-color: #e53935 !important;
-    box-shadow: 0 4px 24px #e5393555;
-}
-
-/* Valentine Heart Art for Testimonials */
-.valentine-heart-art {
-    display: block;
-    margin: 18px auto 0 auto;
-    width: 38px;
-    height: 32px;
-    opacity: 0.92;
-    transition: transform 0.2s;
-}
-
-.valentine-heart-art svg {
-    display: block;
-    width: 100%;
-    height: 100%;
-}
-
-.valentine-heart-art:hover {
-    transform: scale(1.13) rotate(-6deg);
-    opacity: 1;
-    filter: drop-shadow(0 2px 8px #e5393555);
-}
-
-/* Valentine Theme Decorations */
-.valentine-heart {
-    position: fixed;
-    z-index: 9999;
-    width: 32px;
-    height: 32px;
-    background: pink;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%) scale(1);
-    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-    box-shadow: 0 2px 8px rgba(255, 0, 80, 0.2);
-    animation: floatHeart 6s linear infinite;
-    pointer-events: none;
+height: 32px;
+background: pink;
+left: 50%;
+top: 50%;
+transform: translate(-50%, -50%) scale(1);
+border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+box-shadow: 0 2px 8px rgba(255, 0, 80, 0.2);
+animation: floatHeart 6s linear infinite;
+pointer-events: none;
 }
 
 .valentine-heart:before,
