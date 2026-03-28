@@ -3504,6 +3504,33 @@ body {
     color: #c3483f;
 }
 
+/* Field-level error highlighting */
+.volunteer-form input.field-error,
+.volunteer-form textarea.field-error,
+.volunteer-form select.field-error {
+    border-color: #c3483f !important;
+    box-shadow: 0 0 0 2.5px rgba(195, 72, 63, 0.22) !important;
+    background: #fff8f8 !important;
+    animation: field-shake 0.35s ease;
+}
+
+.volunteer-form .field-group-error {
+    border: 2px solid #c3483f;
+    border-radius: 12px;
+    padding: 0.5rem;
+    background: #fff8f8;
+    animation: field-shake 0.35s ease;
+}
+
+@keyframes field-shake {
+    0%   { transform: translateX(0); }
+    20%  { transform: translateX(-5px); }
+    40%  { transform: translateX(5px); }
+    60%  { transform: translateX(-4px); }
+    80%  { transform: translateX(4px); }
+    100% { transform: translateX(0); }
+}
+
 .form-consent input {
     margin: 0;
     width: 1.15rem;
