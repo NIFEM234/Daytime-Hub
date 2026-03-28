@@ -5,6 +5,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Application Details | Admin</title>
+    <link rel="icon" href="/favicon.png" type="image/png">
+    <link rel="apple-touch-icon" href="/favicon.png">
+    <link rel="manifest" href="/site.webmanifest">
     <style>
         :root {
             color-scheme: light;
@@ -147,8 +150,11 @@
 
 <body>
     <header>
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem;">
-            <h1>Volunteer Application</h1>
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+                <img src="/img/Gravesend daytime logo Facebook" alt="DayTime Hub Logo" style="width:44px; height:44px; object-fit:contain; border-radius:8px; background:white; padding:4px;" />
+                <h1 style="margin:0; font-size:1.5rem;">Volunteer Application</h1>
+            </div>
             <form method="POST" action="/admin/logout" style="margin:0;">
                 <button type="submit"
                     style="background:#ffffff; color:#0f4c5c; border:none; padding:0.45rem 0.9rem; border-radius:8px; font-weight:600; cursor:pointer;">Log

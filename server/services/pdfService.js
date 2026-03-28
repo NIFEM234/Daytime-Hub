@@ -1,4 +1,9 @@
 import PDFDocument from 'pdfkit';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const LOGO_PATH = path.join(__dirname, '..', '..', 'img', 'Gravesend daytime logo Facebook');
 
 export function generateApplicationPdf(application) {
     return new Promise((resolve, reject) => {
@@ -8,6 +13,14 @@ export function generateApplicationPdf(application) {
         doc.on('data', chunk => chunks.push(chunk));
         doc.on('end', () => resolve(Buffer.concat(chunks)));
         doc.on('error', reject);
+
+        // Add Logo
+        try {
+            doc.image(LOGO_PATH, 50, 45, { width: 60 });
+            doc.moveDown(2);
+        } catch (err) {
+            console.error('PDF Logo error:', err);
+        }
 
         doc.fontSize(18).text('Volunteer Application', { align: 'center' });
         doc.moveDown(1.5);
@@ -64,6 +77,14 @@ export function generateContactPdf(contact) {
         doc.on('data', chunk => chunks.push(chunk));
         doc.on('end', () => resolve(Buffer.concat(chunks)));
         doc.on('error', reject);
+
+        // Add Logo
+        try {
+            doc.image(LOGO_PATH, 50, 45, { width: 60 });
+            doc.moveDown(2);
+        } catch (err) {
+            console.error('PDF Logo error:', err);
+        }
 
         doc.fontSize(18).text('Contact Message', { align: 'center' });
         doc.moveDown(1.5);
