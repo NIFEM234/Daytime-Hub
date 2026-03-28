@@ -5,7 +5,6 @@ import { generateApplicationPdf } from '../services/pdfService.js';
 import { sendApplicationEmail, sendReferenceRequestEmail } from '../services/emailService.js';
 import path from 'path';
 import fs from 'fs';
-import { fileURLToPath } from 'url';
 
 const router = Router();
 
@@ -58,33 +57,75 @@ const applicationSchema = z.object({
 
 router.post('/apply', async (req, res, next) => {
     try {
+        // Step 1 — Validate the form data
         const parsed = applicationSchema.safeParse(req.body);
         if (!parsed.success) {
-            return res.status(400).json({ success: false, message: 'Invalid form data', errors: parsed.error.flatten() });
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid form data',
+                errors: parsed.error.flatten()
+            });
         }
 
         const application = parsed.data;
-        const saved = await saveApplication(application);
-        const pdfBuffer = await generateApplicationPdf(saved);
 
-        // Save PDF to admin-protected public folder so admins can view it via a secure admin link
+        // Step 2 — Save to database
+        // If this fails we return a real error to the user
+        let saved;
         try {
-            // Use process.cwd() to reliably locate the server folder when running scripts
-            const pdfDir = path.join(process.cwd(), 'public', 'admin', 'pdfs');
-            fs.mkdirSync(pdfDir, { recursive: true });
-            const filename = `application_${saved.id}.pdf`;
-            const filePath = path.join(pdfDir, filename);
-            fs.writeFileSync(filePath, pdfBuffer);
-            const pdfUrlPath = `/admin/pdfs/${filename}`;
-            // Attach the generated PDF to the notification email (and keep the admin link)
-            await sendApplicationEmail(saved, pdfBuffer, application.email, pdfUrlPath);
-        } catch (e) {
-            console.error('Failed to save PDF to disk:', e && e.message ? e.message : e);
-            // Fallback to attaching the PDF if saving fails
-            await sendApplicationEmail(saved, pdfBuffer, application.email);
+            saved = await saveApplication(application);
+        } catch (dbErr) {
+            console.error('Database save failed:', dbErr?.message || dbErr);
+            return res.status(500).json({
+                success: false,
+                message: 'Could not save your application. Please try again.'
+            });
         }
 
-        return res.json({ success: true, message: 'Application submitted successfully' });
+        // Step 3 — Respond to the user immediately
+        // We do this BEFORE email/PDF so a broken email never causes a 500 error
+        res.json({ success: true, message: 'Application submitted successfully' });
+
+        // Step 4 — Generate PDF and send email in the background
+        // This runs AFTER the response is already sent to the user
+        // Any error here is logged but does NOT affect the user
+        setImmediate(async () => {
+            let pdfBuffer = null;
+
+            // Try to generate the PDF
+            try {
+                pdfBuffer = await generateApplicationPdf(saved);
+            } catch (pdfErr) {
+                console.error('PDF generation failed for application', saved.id, ':', pdfErr?.message || pdfErr);
+                // Continue without PDF — we can still try to send a text email
+            }
+
+            // Try to save PDF to disk for the admin panel
+            let pdfUrlPath;
+            if (pdfBuffer) {
+                try {
+                    const pdfDir = path.join(process.cwd(), 'public', 'admin', 'pdfs');
+                    fs.mkdirSync(pdfDir, { recursive: true });
+                    const filename = `application_${saved.id}.pdf`;
+                    fs.writeFileSync(path.join(pdfDir, filename), pdfBuffer);
+                    pdfUrlPath = `/admin/pdfs/${filename}`;
+                } catch (pdfSaveErr) {
+                    console.error('Could not save PDF to disk for application', saved.id, ':', pdfSaveErr?.message || pdfSaveErr);
+                    // Continue — email will still work without a disk path
+                }
+            }
+
+            // Try to send the notification email
+            try {
+                await sendApplicationEmail(saved, pdfBuffer, application.email, pdfUrlPath);
+                console.log('Application email sent successfully for id', saved.id);
+            } catch (emailErr) {
+                console.error('Email send failed for application', saved.id, ':', emailErr?.message || emailErr);
+                // The application is safely in the database — this is just a notification failure
+                // Admin can still see it in the admin panel at /admin
+            }
+        });
+
     } catch (error) {
         next(error);
     }
